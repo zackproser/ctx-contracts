@@ -137,7 +137,7 @@ npm run typecheck
 
 1. Edit the Zod in `src/envelopes.ts`; register new contracts in `src/registry.ts`; add a golden fixture in `fixtures/<contract>.json`.
 2. `npm run schemas` and commit the generated files. CI runs `git diff --exit-code -- schemas`.
-3. CI also checks out `ctx-cli` and runs its whole suite against your branch (`downstream-ctx-cli` job), so a change that breaks the CLI cannot land here.
+3. Cross-repo conformance runs on the consumer side: `ctx-cli`'s CI has a `contracts-main` job that installs the tip of this repo and runs the CLI's whole suite against it, so drift between the two shows up before a pin is bumped. (`ctx-cli` is a private repository, so the check cannot run from here without a new secret.)
 4. Pin the new commit in `ctx` (exact) and, when the CLI needs the change, in `ctx-cli`.
 
 ## License
