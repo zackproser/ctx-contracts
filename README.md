@@ -73,7 +73,8 @@ Every read-model envelope is `.passthrough()`: the schema pins the contract lite
 
 | Contract | Schema | What it is |
 |---|---|---|
-| `ctx.work-outcome-draft.v1` | `WorkOutcomeDraftSchema` | Compiler output: outcome graph, lanes, obligations, lint |
+| `ctx.work-outcome-draft.v1` | `WorkOutcomeDraftSchema` | Compiler v2 output (`schema_version: 2`): outcome graph, lanes, obligations, lint, obligation IR, template, provenance, `generated_by` deterministic/model/merged, `status` final/improving, `fallback_reason` |
+| `ctx.work-obligation-ir.v1` | `ObligationIRSchema` | Typed obligation inventory the compiler lowers into the graph (embedded as `ir` in the draft) |
 | `ctx.work-graph-lint.v1` | `WorkGraphLintSchema` | Topology + diagnostics for a completion graph shape |
 | `ctx.todo-handle.v1` | `TodoHandleSchema` | Governed dispatch result: graph custody, jobs, receipts |
 | `ctx.work-completion.v1` | `WorkCompletionSchema` | Completion-graph read model (status ≠ execution) |
@@ -103,7 +104,7 @@ import { WORK_RUN_STATES, WORK_EXECUTORS, COMPLETION_STATUSES, type WorkRunState
 new Option('--executor <executor>').choices([...WORK_EXECUTORS]);
 ```
 
-`WORK_NODE_KINDS`, `WORK_EDGE_KINDS`, `WORK_RESOURCE_TYPES` (alias `ARTIFACT_TYPES`), `WORK_RUN_STATES`, `WORK_RESOURCE_HEALTH`, `COMPLETION_NODE_KINDS`, `COMPLETION_STATUSES`, `COMPLETION_POLICIES`, `CARDINALITY_MODES`, `COMPLETION_GRAPH_STATES`, `WORK_EXECUTORS`, `DELIVERY_MODES`, `EFFORTS`, plus the `WorkResource` interface. The server is the only writer of these lists.
+`WORK_NODE_KINDS`, `WORK_EDGE_KINDS`, `WORK_RESOURCE_TYPES` (alias `ARTIFACT_TYPES`), `WORK_RUN_STATES`, `WORK_RESOURCE_HEALTH`, `COMPLETION_NODE_KINDS`, `COMPLETION_STATUSES`, `COMPLETION_POLICIES`, `CARDINALITY_MODES`, `COMPLETION_GRAPH_STATES`, `WORK_EXECUTORS`, `DELIVERY_MODES`, `EFFORTS`, the compiler lists (`DRAFT_GENERATORS`, `DRAFT_STATUSES`, `DRAFT_FALLBACK_REASONS`, `DRAFT_TEMPLATES`, `DRAFT_STEP_VERIFIER_IDS`, `DRAFT_STEP_VERIFIER_LABELS`, `DRAFT_RECEIPT_VERIFIER_IDS`, `REPOSITORY_ROLES`, `DELIVERABLE_KINDS`, `CHECK_KINDS`), plus the `WorkResource` interface. The server is the only writer of these lists.
 
 ### Canonical digest
 

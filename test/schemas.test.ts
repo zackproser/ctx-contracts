@@ -39,15 +39,18 @@ describe('generated JSON Schema 2020-12', () => {
 });
 
 describe('golden fixtures', () => {
+  // `<contract>.json`, plus optional `<contract>.<label>.json` variants.
   const fixtures = readdirSync(resolve(root, 'fixtures')).filter((name) => name.endsWith('.json'));
+  const contractOf = (file: string) => CONTRACTS.filter((contract) => file.startsWith(`${contract}.`))
+    .sort((a, b) => b.length - a.length)[0]!;
 
   it('exist for every contract', () => {
-    expect(fixtures.map((name) => name.replace(/\.json$/, '')).sort()).toEqual([...CONTRACTS].sort());
+    expect([...new Set(fixtures.map(contractOf))].sort()).toEqual([...CONTRACTS].sort());
   });
 
   it.each(fixtures)('%s validates under Zod and Ajv alike', (file) => {
     const fixture = JSON.parse(readFileSync(resolve(root, 'fixtures', file), 'utf8'));
-    const contract = file.replace(/\.json$/, '');
+    const contract = contractOf(file);
     expect(fixture.contract).toBe(contract);
     expect(() => parseEnvelope(fixture)).not.toThrow();
     const validate = validator(contract);

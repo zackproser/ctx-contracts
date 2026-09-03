@@ -5,8 +5,10 @@
 // live only here — JSON Schema is the structural subset.
 import { z } from 'zod';
 import {
-  CARDINALITY_MODES, COMPLETION_GRAPH_STATES, COMPLETION_NODE_KINDS, COMPLETION_POLICIES,
-  COMPLETION_STATUSES, WORK_EXECUTORS, WORK_RUN_STATES,
+  CARDINALITY_MODES, CHECK_KINDS, COMPLETION_GRAPH_STATES, COMPLETION_NODE_KINDS, COMPLETION_POLICIES,
+  COMPLETION_STATUSES, DELIVERABLE_KINDS, DRAFT_FALLBACK_REASONS, DRAFT_GENERATORS, DRAFT_RECEIPT_VERIFIER_IDS,
+  DRAFT_STATUSES, DRAFT_STEP_VERIFIER_IDS, DRAFT_STEP_VERIFIER_LABELS, DRAFT_TEMPLATES, IR_SOURCES,
+  REPOSITORY_ROLES, WORK_EXECUTORS, WORK_RUN_STATES,
 } from './vocabulary.js';
 
 const NonEmpty = z.string().trim().min(1);
@@ -104,6 +106,46 @@ export const WorkGraphLintSchema = z.object({
   }).passthrough(),
 }).passthrough();
 
+// --- ctx.work-obligation-ir.v1 --------------------------------------------
+// The only thing the compiler's model may propose; lowering derives the graph
+// from it. Mirrors @ctx/graph-kernel's ObligationIR field for field (the kernel
+// depends on this package, so it can adopt this definition without a cycle).
+export const SpanSchema = z.object({
+  start: z.number().int().min(0),
+  end: z.number().int().min(0),
+  text: z.string(),
+}).refine((span) => span.end >= span.start, 'span end precedes start');
+
+const IrKey = z.string().regex(/^[a-z][a-z0-9_]{0,40}$/);
+const Provenance = z.array(SpanSchema).min(1);
+
+export const ObligationIRSchema = z.object({
+  contract: z.literal('ctx.work-obligation-ir.v1'),
+  title: z.string().min(1).max(90),
+  repositories: z.array(z.object({
+    id: Repo,
+    role: z.enum(REPOSITORY_ROLES),
+    provenance: Provenance,
+  })).max(12),
+  deliverables: z.array(z.object({
+    key: IrKey,
+    kind: z.enum(DELIVERABLE_KINDS),
+    repository: Repo.nullable(),
+    summary: z.string().min(1).max(300),
+    provenance: Provenance,
+  })).max(24),
+  checks: z.array(z.object({
+    kind: z.enum(CHECK_KINDS),
+    target: z.string().nullable(),
+    provenance: Provenance,
+  })).max(24),
+  ordering: z.array(z.object({ before: IrKey, after: z.array(IrKey).min(1).max(24) })).max(24),
+  join_requested: z.boolean(),
+  parallel_requested: z.boolean(),
+  questions: z.array(z.object({ text: z.string().min(1).max(600), provenance: Provenance })).max(24),
+  source: z.enum(IR_SOURCES),
+});
+
 // --- ctx.work-outcome-draft.v1 --------------------------------------------
 const WorkOutcomeNodeSchema = z.object({
   key: NonEmpty.regex(/^[a-z][a-z0-9_-]{0,63}$/),
@@ -120,15 +162,21 @@ const WorkOutcomeNodeSchema = z.object({
   evaluator_version: NonEmpty.max(80),
 }).passthrough();
 
+// Compiler v2 output. The contract literal stays `.v1` (clients pin it);
+// `schema_version: 2` marks the shape. Version 1 (no schema_version, no ir /
+// template / provenance / status) is NOT accepted: the single production server
+// has emitted v2 exclusively since 2026-09-03, so there is no N-1 to support.
 export const WorkOutcomeDraftSchema = z.object({
   contract: z.literal('ctx.work-outcome-draft.v1'),
+  schema_version: z.literal(2),
   registry_version: NonEmpty,
   prompt: NonEmpty,
   outcome: z.object({
     title: NonEmpty.max(300),
     description: z.string().max(8192),
     entities: z.array(NonEmpty),
-    nodes: z.array(WorkOutcomeNodeSchema).min(1),
+    // Empty when nothing lowered; launch_ready is false in that case.
+    nodes: z.array(WorkOutcomeNodeSchema),
     edges: z.array(z.object({
       from: NonEmpty,
       to: NonEmpty,
@@ -144,32 +192,47 @@ export const WorkOutcomeDraftSchema = z.object({
     node_key: NonEmpty,
     title: NonEmpty,
     detail: NonEmpty,
-    verifier_id: NonEmpty,
+    verifier_id: z.enum(DRAFT_STEP_VERIFIER_IDS),
     verifier_version: NonEmpty,
-    verifier_label: NonEmpty,
+    verifier_label: z.enum(DRAFT_STEP_VERIFIER_LABELS),
     // Repository the lane's work happens in; null for CTX-owned joins/proofs.
-    repository: Repo.nullable().optional(),
-  }).passthrough()).min(1),
+    repository: Repo.nullable(),
+  }).passthrough()),
   extra_receipts: z.array(z.object({
-    id: NonEmpty,
+    id: z.enum(DRAFT_RECEIPT_VERIFIER_IDS),
     version: NonEmpty,
     label: NonEmpty,
     selected: z.boolean(),
   }).passthrough()),
-  // Deterministic explicit-obligation inventory the compiler extracted before
-  // lowering. Optional so an N-1 server still validates.
+  // Deterministic explicit-obligation inventory the compiler extracted before lowering.
   obligations: z.object({
     repositories: z.array(Repo),
     join_requested: z.boolean(),
     parallel_requested: z.boolean(),
-  }).passthrough().optional(),
+  }).passthrough(),
   graph_lint: WorkGraphLintSchema,
   launch_ready: z.boolean(),
-  generated_by: z.enum(['model', 'deterministic']),
-  // Why the model path fell back, bounded and prompt-free (zod issue paths or
-  // the upstream error class). Optional so an N-1 server still validates.
-  fallback_detail: z.string().max(400).nullable().optional(),
+  // `merged` = deterministic floor + accepted model IR; `deterministic` = floor
+  // only (see fallback_reason); `model` is reserved for a model-only path.
+  generated_by: z.enum(DRAFT_GENERATORS),
   generated_at: z.string().datetime({ offset: true }),
+  ir: ObligationIRSchema,
+  template: z.enum(DRAFT_TEMPLATES),
+  // node key → the IR items and prompt spans that justify it.
+  provenance: z.record(z.string(), z.object({
+    obligation_keys: z.array(z.string()),
+    spans: z.array(SpanSchema),
+  }).passthrough()),
+  fallback_reason: z.enum(DRAFT_FALLBACK_REASONS).nullable(),
+  // Why the model path fell back, bounded and prompt-free (zod issue paths or
+  // the upstream error class). Optional: the server adds it in a later release.
+  fallback_detail: z.string().max(400).nullable().optional(),
+  model_latency_ms: z.number().int().nonnegative().nullable(),
+  // sha256 of prompt hash + context hash; stable across replays of one prompt.
+  draft_id: ShapeHash,
+  // `improving`: the floor was returned on a model timeout and the merged draft
+  // is being finished in the background; the next preview replays it as final.
+  status: z.enum(DRAFT_STATUSES),
 }).passthrough();
 
 // --- ctx.todo-handle.v1 ---------------------------------------------------
@@ -314,6 +377,8 @@ export const BrowserEvidence = z.object({
 
 export type WorkGraphLint = z.infer<typeof WorkGraphLintSchema>;
 export type WorkOutcomeDraft = z.infer<typeof WorkOutcomeDraftSchema>;
+export type ObligationIR = z.infer<typeof ObligationIRSchema>;
+export type Span = z.infer<typeof SpanSchema>;
 export type TodoHandle = z.infer<typeof TodoHandleSchema>;
 export type WorkCompletion = z.infer<typeof WorkCompletionSchema>;
 export type WorkRunDetail = z.infer<typeof WorkRunDetailSchema>;
