@@ -8,6 +8,10 @@
       "type": "string",
       "const": "ctx.work-outcome-draft.v1"
     },
+    "schema_version": {
+      "type": "number",
+      "const": 2
+    },
     "registry_version": {
       "type": "string",
       "minLength": 1
@@ -120,8 +124,7 @@
               "evaluator_version"
             ],
             "additionalProperties": true
-          },
-          "minItems": 1
+          }
         },
         "edges": {
           "type": "array",
@@ -207,7 +210,13 @@
           },
           "verifier_id": {
             "type": "string",
-            "minLength": 1
+            "enum": [
+              "ctx.github-merge-verifier",
+              "ctx.work-run-artifact",
+              "ctx.manual-attestation",
+              "ctx.declarative",
+              "ctx.input-membership"
+            ]
           },
           "verifier_version": {
             "type": "string",
@@ -215,7 +224,14 @@
           },
           "verifier_label": {
             "type": "string",
-            "minLength": 1
+            "enum": [
+              "GITHUB VERIFIES",
+              "HARNESS RECEIPT",
+              "HARNESS + VERIFIED",
+              "YOU ATTEST",
+              "CTX JOINS",
+              "EXACT INPUTS"
+            ]
           },
           "repository": {
             "anyOf": [
@@ -236,11 +252,11 @@
           "detail",
           "verifier_id",
           "verifier_version",
-          "verifier_label"
+          "verifier_label",
+          "repository"
         ],
         "additionalProperties": true
-      },
-      "minItems": 1
+      }
     },
     "extra_receipts": {
       "type": "array",
@@ -249,7 +265,10 @@
         "properties": {
           "id": {
             "type": "string",
-            "minLength": 1
+            "enum": [
+              "ctx.deployment-release-verifier",
+              "ctx.browser-smoke-verifier"
+            ]
           },
           "version": {
             "type": "string",
@@ -393,8 +412,381 @@
     "generated_by": {
       "type": "string",
       "enum": [
+        "deterministic",
         "model",
-        "deterministic"
+        "merged"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ir": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "type": "string",
+          "const": "ctx.work-obligation-ir.v1"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90
+        },
+        "repositories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+$"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "deployable",
+                  "library",
+                  "unknown"
+                ]
+              },
+              "provenance": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end",
+                    "text"
+                  ],
+                  "additionalProperties": true
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "id",
+              "role",
+              "provenance"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 12
+        },
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,40}$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "pull_request",
+                  "commit",
+                  "document",
+                  "artifact",
+                  "deployment",
+                  "message"
+                ]
+              },
+              "repository": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "provenance": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end",
+                    "text"
+                  ],
+                  "additionalProperties": true
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "key",
+              "kind",
+              "repository",
+              "summary",
+              "provenance"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 24
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "deployment_release",
+                  "browser_smoke",
+                  "github_merge",
+                  "owner_attestation",
+                  "connector"
+                ]
+              },
+              "target": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provenance": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end",
+                    "text"
+                  ],
+                  "additionalProperties": true
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "kind",
+              "target",
+              "provenance"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 24
+        },
+        "ordering": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "before": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,40}$"
+              },
+              "after": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,40}$"
+                },
+                "minItems": 1,
+                "maxItems": 24
+              }
+            },
+            "required": [
+              "before",
+              "after"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 24
+        },
+        "join_requested": {
+          "type": "boolean"
+        },
+        "parallel_requested": {
+          "type": "boolean"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "provenance": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "end": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "start",
+                    "end",
+                    "text"
+                  ],
+                  "additionalProperties": true
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "text",
+              "provenance"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 24
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "deterministic",
+            "model",
+            "merged"
+          ]
+        }
+      },
+      "required": [
+        "contract",
+        "title",
+        "repositories",
+        "deliverables",
+        "checks",
+        "ordering",
+        "join_requested",
+        "parallel_requested",
+        "questions",
+        "source"
+      ],
+      "additionalProperties": true
+    },
+    "template": {
+      "type": "string",
+      "enum": [
+        "single_repo_delivery",
+        "multi_repo_join",
+        "report_only",
+        "research_plan_handoff",
+        "merge_gate",
+        "owner_checklist"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "obligation_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "spans": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "start",
+                "end",
+                "text"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "obligation_keys",
+          "spans"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "fallback_reason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "model_timeout",
+            "model_invalid",
+            "model_unconfigured",
+            "coverage_failed"
+          ]
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "fallback_detail": {
@@ -408,22 +800,49 @@
         }
       ]
     },
-    "generated_at": {
+    "model_latency_ms": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "draft_id": {
       "type": "string",
-      "format": "date-time"
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "final",
+        "improving"
+      ]
     }
   },
   "required": [
     "contract",
+    "schema_version",
     "registry_version",
     "prompt",
     "outcome",
     "steps",
     "extra_receipts",
+    "obligations",
     "graph_lint",
     "launch_ready",
     "generated_by",
-    "generated_at"
+    "generated_at",
+    "ir",
+    "template",
+    "provenance",
+    "fallback_reason",
+    "model_latency_ms",
+    "draft_id",
+    "status"
   ],
   "additionalProperties": true
 }

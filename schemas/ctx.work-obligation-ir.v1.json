@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.work-obligation-ir.v1.json",
+  "title": "ctx.work-obligation-ir.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.work-obligation-ir.v1"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 90
+    },
+    "repositories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+$"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "deployable",
+              "library",
+              "unknown"
+            ]
+          },
+          "provenance": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "start",
+                "end",
+                "text"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "provenance"
+        ],
+        "additionalProperties": true
+      },
+      "maxItems": 12
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,40}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "pull_request",
+              "commit",
+              "document",
+              "artifact",
+              "deployment",
+              "message"
+            ]
+          },
+          "repository": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "provenance": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "start",
+                "end",
+                "text"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "repository",
+          "summary",
+          "provenance"
+        ],
+        "additionalProperties": true
+      },
+      "maxItems": 24
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "deployment_release",
+              "browser_smoke",
+              "github_merge",
+              "owner_attestation",
+              "connector"
+            ]
+          },
+          "target": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "start",
+                "end",
+                "text"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "kind",
+          "target",
+          "provenance"
+        ],
+        "additionalProperties": true
+      },
+      "maxItems": 24
+    },
+    "ordering": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,40}$"
+          },
+          "after": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,40}$"
+            },
+            "minItems": 1,
+            "maxItems": 24
+          }
+        },
+        "required": [
+          "before",
+          "after"
+        ],
+        "additionalProperties": true
+      },
+      "maxItems": 24
+    },
+    "join_requested": {
+      "type": "boolean"
+    },
+    "parallel_requested": {
+      "type": "boolean"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          },
+          "provenance": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "start",
+                "end",
+                "text"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "text",
+          "provenance"
+        ],
+        "additionalProperties": true
+      },
+      "maxItems": 24
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "deterministic",
+        "model",
+        "merged"
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "title",
+    "repositories",
+    "deliverables",
+    "checks",
+    "ordering",
+    "join_requested",
+    "parallel_requested",
+    "questions",
+    "source"
+  ],
+  "additionalProperties": true
+}

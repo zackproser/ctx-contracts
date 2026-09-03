@@ -2,6 +2,7 @@
   "contracts": [
     "ctx.web-journey.v1",
     "ctx.work-graph-lint.v1",
+    "ctx.work-obligation-ir.v1",
     "ctx.work-outcome-draft.v1",
     "ctx.todo-handle.v1",
     "ctx.work-completion.v1",

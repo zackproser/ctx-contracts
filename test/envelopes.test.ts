@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  TodoHandleSchema, VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema,
+  ObligationIRSchema, TodoHandleSchema, VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema,
   WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema,
 } from '../src/envelopes.js';
 import { parseEnvelope } from '../src/registry.js';
@@ -28,11 +30,49 @@ describe('ctx.web-journey.v1', () => {
   });
 });
 
+const productionDraft = () => JSON.parse(readFileSync(
+  resolve(import.meta.dirname, '../fixtures/ctx.work-outcome-draft.v1.multi-repo-join.json'), 'utf8',
+));
+
 describe('prompt-to-graph MCP responses', () => {
   it('rejects draft responses without the server-owned contract and graph lint', () => {
     expect(() => WorkOutcomeDraftSchema.parse({
       contract: 'ctx.work-outcome-draft.v0', outcome: { nodes: [] },
     })).toThrow();
+  });
+
+  // 2026-09-03: production emitted generated_by "merged" and the contract only
+  // knew model | deterministic, so `ctx task draft` threw CTX_PROTOCOL on every draft.
+  it('accepts every compiler v2 generator, status, fallback reason and template', () => {
+    const draft = productionDraft();
+    expect(draft.generated_by).toBe('merged');
+    expect(WorkOutcomeDraftSchema.parse(draft)).toEqual(draft);
+    for (const generated_by of ['deterministic', 'model', 'merged']) expect(WorkOutcomeDraftSchema.parse({ ...draft, generated_by }).generated_by).toBe(generated_by);
+    for (const status of ['final', 'improving']) expect(WorkOutcomeDraftSchema.parse({ ...draft, status }).status).toBe(status);
+    for (const fallback_reason of [null, 'model_timeout', 'model_invalid', 'model_unconfigured', 'coverage_failed']) {
+      expect(WorkOutcomeDraftSchema.parse({ ...draft, fallback_reason }).fallback_reason).toBe(fallback_reason);
+    }
+    for (const template of ['single_repo_delivery', 'multi_repo_join', 'report_only', 'research_plan_handoff', 'merge_gate', 'owner_checklist']) {
+      expect(WorkOutcomeDraftSchema.parse({ ...draft, template }).template).toBe(template);
+    }
+    expect(() => WorkOutcomeDraftSchema.parse({ ...draft, generated_by: 'oracle' })).toThrow(/generated_by/);
+    expect(() => WorkOutcomeDraftSchema.parse({ ...draft, fallback_reason: 'gremlins' })).toThrow(/fallback_reason/);
+    expect(() => WorkOutcomeDraftSchema.parse({ ...draft, status: 'done' })).toThrow(/status/);
+    expect(() => WorkOutcomeDraftSchema.parse({ ...draft, launch_ready: 'yes' })).toThrow(/launch_ready/);
+  });
+
+  it('requires schema_version 2 and the v2 fields; a v1 draft is not N-1 compatible', () => {
+    const draft = productionDraft();
+    const { schema_version, ir, template, provenance, fallback_reason, model_latency_ms, draft_id, status, ...v1 } = draft;
+    expect(() => WorkOutcomeDraftSchema.parse(v1)).toThrow(/schema_version/);
+    expect(() => WorkOutcomeDraftSchema.parse({ ...draft, schema_version: 1 })).toThrow(/schema_version/);
+    for (const field of ['ir', 'template', 'provenance', 'draft_id', 'status', 'obligations'] as const) {
+      const { [field]: _dropped, ...without } = draft;
+      expect(() => WorkOutcomeDraftSchema.parse(without), field).toThrow(new RegExp(field));
+    }
+    expect(() => WorkOutcomeDraftSchema.parse({ ...draft, ir: { ...draft.ir, source: 'oracle' } })).toThrow(/source/);
+    expect(ObligationIRSchema.parse(draft.ir)).toEqual(draft.ir);
+    expect(parseEnvelope(draft.ir)).toEqual(draft.ir);
   });
 
   it('requires canonical handling custody instead of a Mermaid projection', () => {
@@ -88,7 +128,7 @@ describe('read-model envelopes', () => {
     const steps = WorkOutcomeDraftSchema.shape.steps;
     expect(steps.parse([{ ...step, repository: 'zackproser/ctx-cli' }])[0]?.repository).toBe('zackproser/ctx-cli');
     expect(steps.parse([{ ...step, repository: null }])[0]?.repository).toBeNull();
-    expect(steps.parse([step])).toHaveLength(1); // N-1 server: field absent
+    expect(() => steps.parse([step])).toThrow(/repository/); // v2 always binds the lane, null for CTX-owned nodes
     expect(() => steps.parse([{ ...step, repository: 'not a repo' }])).toThrow(/repository/);
     const obligations = WorkOutcomeDraftSchema.shape.obligations;
     expect(obligations.parse({ repositories: ['zackproser/ctx', 'zackproser/ctx-cli'], join_requested: true, parallel_requested: true }))

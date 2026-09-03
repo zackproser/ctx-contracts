@@ -1,0 +1,232 @@
+{
+  "contract": "ctx.work-outcome-draft.v1",
+  "schema_version": 2,
+  "registry_version": "1",
+  "prompt": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli. Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+  "outcome": {
+    "title": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli. Finish w…",
+    "description": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli. Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+    "entities": ["verifier-deployment-release", "verifier-browser-smoke"],
+    "nodes": [
+      {
+        "key": "lane_ctx_cli",
+        "title": "Pull request that produces the CLI release for production deployment.",
+        "description": "Repository: zackproser/ctx-cli\nPull request that produces the CLI release for production deployment. CTX also requires independent deployment release and browser smoke receipts.",
+        "kind": "artifact_requirement",
+        "policy": "required",
+        "cardinality": { "mode": "at_least", "target": 1 },
+        "predicate": {
+          "op": "all",
+          "conditions": [
+            { "op": "observation_count", "observation_kind": "artifact", "min_count": 1 },
+            {
+              "op": "observation_count", "observation_kind": "verification_receipt", "min_count": 1,
+              "matches": [
+                { "path": "verifier_id", "operator": "eq", "value": "ctx.deployment-release-verifier" },
+                { "path": "passed", "operator": "eq", "value": true }
+              ]
+            },
+            {
+              "op": "observation_count", "observation_kind": "verification_receipt", "min_count": 1,
+              "matches": [
+                { "path": "verifier_id", "operator": "eq", "value": "ctx.browser-smoke-verifier" },
+                { "path": "passed", "operator": "eq", "value": true }
+              ]
+            }
+          ]
+        },
+        "evaluator": "ctx.declarative",
+        "evaluator_version": "1"
+      },
+      {
+        "key": "lane_ctx",
+        "title": "Pull request that produces the server release for production deployment.",
+        "description": "Repository: zackproser/ctx\nPull request that produces the server release for production deployment.",
+        "kind": "artifact_requirement",
+        "policy": "required",
+        "cardinality": { "mode": "at_least", "target": 1 },
+        "predicate": { "op": "observation_count", "observation_kind": "artifact", "min_count": 1 },
+        "evaluator": "ctx.work-run-artifact",
+        "evaluator_version": "1"
+      },
+      {
+        "key": "joined_proof",
+        "title": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+        "description": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+        "kind": "artifact_requirement",
+        "policy": "required",
+        "cardinality": { "mode": "at_least", "target": 1 },
+        "predicate": { "op": "observation_count", "observation_kind": "artifact", "min_count": 1 },
+        "evaluator": "ctx.work-run-artifact",
+        "evaluator_version": "1"
+      }
+    ],
+    "edges": [
+      { "from": "joined_proof", "to": "lane_ctx_cli", "kind": "depends_on" },
+      { "from": "joined_proof", "to": "lane_ctx", "kind": "depends_on" }
+    ],
+    "initial_memberships": []
+  },
+  "steps": [
+    {
+      "key": "lane_ctx_cli",
+      "node_key": "lane_ctx_cli",
+      "title": "Pull request that produces the CLI release for production deployment.",
+      "detail": "Pull request that produces the CLI release for production deployment. CTX also requires independent deployment release and browser smoke receipts.",
+      "verifier_id": "ctx.declarative",
+      "verifier_version": "1",
+      "verifier_label": "HARNESS + VERIFIED",
+      "repository": "zackproser/ctx-cli"
+    },
+    {
+      "key": "lane_ctx",
+      "node_key": "lane_ctx",
+      "title": "Pull request that produces the server release for production deployment.",
+      "detail": "Pull request that produces the server release for production deployment.",
+      "verifier_id": "ctx.work-run-artifact",
+      "verifier_version": "1",
+      "verifier_label": "HARNESS RECEIPT",
+      "repository": "zackproser/ctx"
+    },
+    {
+      "key": "joined_proof",
+      "node_key": "joined_proof",
+      "title": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+      "detail": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+      "verifier_id": "ctx.work-run-artifact",
+      "verifier_version": "1",
+      "verifier_label": "HARNESS RECEIPT",
+      "repository": null
+    }
+  ],
+  "extra_receipts": [
+    { "id": "ctx.deployment-release-verifier", "version": "1", "label": "Deployment release identity", "selected": true },
+    { "id": "ctx.browser-smoke-verifier", "version": "1", "label": "Browser smoke — desktop + phone, no console errors", "selected": true }
+  ],
+  "obligations": { "repositories": ["zackproser/ctx-cli", "zackproser/ctx"], "join_requested": true, "parallel_requested": true },
+  "graph_lint": {
+    "contract": "ctx.work-graph-lint.v1",
+    "valid": true,
+    "diagnostics": [],
+    "topology": {
+      "entry_node_keys": ["lane_ctx", "lane_ctx_cli"],
+      "terminal_node_keys": ["joined_proof"],
+      "execution_order": ["lane_ctx", "lane_ctx_cli", "joined_proof"]
+    }
+  },
+  "launch_ready": true,
+  "ir": {
+    "contract": "ctx.work-obligation-ir.v1",
+    "title": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli. Finish w…",
+    "repositories": [
+      {
+        "id": "zackproser/ctx-cli",
+        "role": "deployable",
+        "provenance": [
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." }
+        ]
+      },
+      {
+        "id": "zackproser/ctx",
+        "role": "deployable",
+        "provenance": [
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." }
+        ]
+      }
+    ],
+    "deliverables": [
+      {
+        "key": "lane_ctx_cli",
+        "kind": "pull_request",
+        "repository": "zackproser/ctx-cli",
+        "summary": "Pull request that produces the CLI release for production deployment.",
+        "provenance": [
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." }
+        ]
+      },
+      {
+        "key": "lane_ctx",
+        "kind": "pull_request",
+        "repository": "zackproser/ctx",
+        "summary": "Pull request that produces the server release for production deployment.",
+        "provenance": [
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+          { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." }
+        ]
+      },
+      {
+        "key": "joined_proof",
+        "kind": "artifact",
+        "repository": null,
+        "summary": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification.",
+        "provenance": [
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "deployment_release",
+        "target": "zackproser/ctx",
+        "provenance": [
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." }
+        ]
+      },
+      {
+        "kind": "browser_smoke",
+        "target": "zackproser/ctx",
+        "provenance": [
+          { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." }
+        ]
+      }
+    ],
+    "ordering": [{ "before": "joined_proof", "after": ["lane_ctx_cli", "lane_ctx"] }],
+    "join_requested": true,
+    "parallel_requested": true,
+    "questions": [],
+    "source": "merged"
+  },
+  "template": "multi_repo_join",
+  "provenance": {
+    "lane_ctx_cli": {
+      "obligation_keys": ["lane_ctx_cli", "ctx.deployment-release-verifier", "ctx.browser-smoke-verifier"],
+      "spans": [
+        { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+        { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." }
+      ]
+    },
+    "lane_ctx": {
+      "obligation_keys": ["lane_ctx"],
+      "spans": [
+        { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+        { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+        { "start": 0, "end": 80, "text": "Ship the server and the CLI in two repos: zackproser/ctx and zackproser/ctx-cli." },
+        { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+        { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+        { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." },
+        { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." }
+      ]
+    },
+    "joined_proof": {
+      "obligation_keys": ["joined_proof"],
+      "spans": [
+        { "start": 81, "end": 233, "text": "Finish with a joined production proof: the merged CTX release must pass independent deployment and authenticated desktop and phone browser verification." }
+      ]
+    }
+  },
+  "generated_by": "merged",
+  "fallback_reason": null,
+  "model_latency_ms": 14601,
+  "draft_id": "e3c45f9e95c763ac928ed5a8b18938489a1580802231d08c7f4eefa116b414aa",
+  "status": "final",
+  "generated_at": "2026-09-03T16:47:07.939Z"
+}

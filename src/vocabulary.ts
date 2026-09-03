@@ -82,3 +82,46 @@ export type DeliveryMode = typeof DELIVERY_MODES[number];
 
 export const EFFORTS = ['low', 'medium', 'high', 'xhigh'] as const;
 export type Effort = typeof EFFORTS[number];
+
+// --- Compiler (draft_work_outcome) ---------------------------------------
+// Mirrors src/service/work-outcome-drafts.ts in ctx and obligation-ir.ts /
+// lowering.ts in @ctx/graph-kernel. A new value there is a change here first.
+export const DRAFT_GENERATORS = ['deterministic', 'model', 'merged'] as const;
+export type DraftGenerator = typeof DRAFT_GENERATORS[number];
+
+export const DRAFT_STATUSES = ['final', 'improving'] as const;
+export type DraftStatus = typeof DRAFT_STATUSES[number];
+
+export const DRAFT_FALLBACK_REASONS = ['model_timeout', 'model_invalid', 'model_unconfigured', 'coverage_failed'] as const;
+export type DraftFallbackReason = typeof DRAFT_FALLBACK_REASONS[number];
+
+export const DRAFT_TEMPLATES = [
+  'single_repo_delivery', 'multi_repo_join', 'report_only', 'research_plan_handoff', 'merge_gate', 'owner_checklist',
+] as const;
+export type DraftTemplate = typeof DRAFT_TEMPLATES[number];
+
+export const DRAFT_STEP_VERIFIER_IDS = [
+  'ctx.github-merge-verifier', 'ctx.work-run-artifact', 'ctx.manual-attestation', 'ctx.declarative', 'ctx.input-membership',
+] as const;
+export type DraftStepVerifierId = typeof DRAFT_STEP_VERIFIER_IDS[number];
+
+export const DRAFT_STEP_VERIFIER_LABELS = [
+  'GITHUB VERIFIES', 'HARNESS RECEIPT', 'HARNESS + VERIFIED', 'YOU ATTEST', 'CTX JOINS', 'EXACT INPUTS',
+] as const;
+export type DraftStepVerifierLabel = typeof DRAFT_STEP_VERIFIER_LABELS[number];
+
+export const DRAFT_RECEIPT_VERIFIER_IDS = ['ctx.deployment-release-verifier', 'ctx.browser-smoke-verifier'] as const;
+export type DraftReceiptVerifierId = typeof DRAFT_RECEIPT_VERIFIER_IDS[number];
+
+// --- Obligation IR (ctx.work-obligation-ir.v1) ---------------------------
+export const REPOSITORY_ROLES = ['deployable', 'library', 'unknown'] as const;
+export type RepositoryRole = typeof REPOSITORY_ROLES[number];
+
+export const DELIVERABLE_KINDS = ['pull_request', 'commit', 'document', 'artifact', 'deployment', 'message'] as const;
+export type DeliverableKind = typeof DELIVERABLE_KINDS[number];
+
+export const CHECK_KINDS = ['deployment_release', 'browser_smoke', 'github_merge', 'owner_attestation', 'connector'] as const;
+export type CheckKind = typeof CHECK_KINDS[number];
+
+export const IR_SOURCES = DRAFT_GENERATORS;
+export type IrSource = DraftGenerator;

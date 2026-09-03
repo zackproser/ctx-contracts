@@ -2,7 +2,7 @@
 // `contract` field; the JSON Schema generator iterates this map.
 import type { z } from 'zod';
 import {
-  AppHealthSchema, BrowserEvidence, DeploymentEvidence, HealthSchema, TodoHandleSchema,
+  AppHealthSchema, BrowserEvidence, DeploymentEvidence, HealthSchema, ObligationIRSchema, TodoHandleSchema,
   VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema, WorkGraphLintSchema,
   WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema,
 } from './envelopes.js';
@@ -10,6 +10,7 @@ import {
 export const ENVELOPES = {
   'ctx.web-journey.v1': WebJourneySchema,
   'ctx.work-graph-lint.v1': WorkGraphLintSchema,
+  'ctx.work-obligation-ir.v1': ObligationIRSchema,
   'ctx.work-outcome-draft.v1': WorkOutcomeDraftSchema,
   'ctx.todo-handle.v1': TodoHandleSchema,
   'ctx.work-completion.v1': WorkCompletionSchema,
