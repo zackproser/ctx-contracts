@@ -166,6 +166,9 @@ export const WorkOutcomeDraftSchema = z.object({
   graph_lint: WorkGraphLintSchema,
   launch_ready: z.boolean(),
   generated_by: z.enum(['model', 'deterministic']),
+  // Why the model path fell back, bounded and prompt-free (zod issue paths or
+  // the upstream error class). Optional so an N-1 server still validates.
+  fallback_detail: z.string().max(400).nullable().optional(),
   generated_at: z.string().datetime({ offset: true }),
 }).passthrough();
 
