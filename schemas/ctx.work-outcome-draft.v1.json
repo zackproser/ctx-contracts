@@ -397,6 +397,17 @@
         "deterministic"
       ]
     },
+    "fallback_detail": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 400
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "generated_at": {
       "type": "string",
       "format": "date-time"
