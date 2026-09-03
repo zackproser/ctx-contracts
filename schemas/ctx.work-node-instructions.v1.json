@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.work-node-instructions.v1.json",
+  "title": "ctx.work-node-instructions.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.work-node-instructions.v1"
+    },
+    "custody": {
+      "type": "object",
+      "properties": {
+        "task_item_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "graph_revision": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "graph_shape_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "node_item_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "node_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "node_instructions": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "task_item_id",
+        "graph_revision",
+        "graph_shape_hash",
+        "node_item_id",
+        "node_key",
+        "node_instructions"
+      ],
+      "additionalProperties": true
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "type": "boolean"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "executable",
+        "code",
+        "reason"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "contract",
+    "custody",
+    "execution"
+  ],
+  "additionalProperties": true
+}

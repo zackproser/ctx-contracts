@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.app-health.v1.json",
+  "title": "ctx.app-health.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.app-health.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "maxItems": 40,
+      "default": []
+    }
+  },
+  "required": [
+    "contract",
+    "ok"
+  ],
+  "additionalProperties": true
+}

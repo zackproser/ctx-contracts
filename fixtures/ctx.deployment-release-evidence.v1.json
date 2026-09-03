@@ -1,0 +1,8 @@
+{
+  "contract": "ctx.deployment-release-evidence.v1",
+  "base_url": "https://ctx.example",
+  "expected_tag": "2026.09.03-1",
+  "public_health": { "contract": "ctx.health.v1", "ok": true, "release_tag": "2026.09.03-1" },
+  "app_health": { "contract": "ctx.app-health.v1", "ok": true, "failed_checks": [] },
+  "failure": null
+}

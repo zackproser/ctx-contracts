@@ -1,0 +1,17 @@
+{
+  "contracts": [
+    "ctx.web-journey.v1",
+    "ctx.work-graph-lint.v1",
+    "ctx.work-outcome-draft.v1",
+    "ctx.todo-handle.v1",
+    "ctx.work-completion.v1",
+    "ctx.work-run-detail.v1",
+    "ctx.work-node-instructions.v1",
+    "ctx.verifier-plan.v1",
+    "ctx.work-run.v1",
+    "ctx.health.v1",
+    "ctx.app-health.v1",
+    "ctx.deployment-release-evidence.v1",
+    "ctx.browser-smoke-evidence.v1"
+  ]
+}

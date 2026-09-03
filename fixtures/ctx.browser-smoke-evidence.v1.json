@@ -1,0 +1,11 @@
+{
+  "contract": "ctx.browser-smoke-evidence.v1",
+  "base_url": "https://ctx.example",
+  "fixtures": [
+    { "name": "desktop", "width": 1440, "height": 900, "assertions_passed": 2, "overflow": false },
+    { "name": "phone", "width": 390, "height": 844, "assertions_passed": 2, "overflow": false }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failure": null
+}

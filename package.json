@@ -1,0 +1,35 @@
+{
+  "name": "@ctx/contracts",
+  "version": "0.1.0",
+  "description": "CTX wire contracts: Zod envelopes, generated JSON Schema 2020-12, server-owned vocabulary, and canonical JSON digests shared by ctx and ctx-cli",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/zackproser/ctx-contracts.git" },
+  "homepage": "https://github.com/zackproser/ctx-contracts#readme",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./schemas/*": "./schemas/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "schemas", "README.md", "LICENSE", "NOTICE"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "schemas": "npm run build && node scripts/generate-schemas.mjs",
+    "test": "vitest run"
+  },
+  "peerDependencies": { "zod": "^3.25.0" },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7",
+    "zod": "3.25.76",
+    "zod-to-json-schema": "3.25.2"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.verifier-plan.v1.json",
+  "title": "ctx.verifier-plan.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.verifier-plan.v1"
+    },
+    "registry_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_item_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "node_item_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "graph_revision": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "default_bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "launch_ready": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "contract",
+    "registry_version",
+    "task_item_id",
+    "node_item_id",
+    "graph_revision",
+    "default_bindings",
+    "launch_ready"
+  ],
+  "additionalProperties": true
+}

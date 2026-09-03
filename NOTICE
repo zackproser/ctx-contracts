@@ -1,0 +1,11 @@
+@ctx/contracts was extracted from two repositories on 2026-09-03:
+
+- github.com/zackproser/ctx @ 192b5518 — src/kernel/canonical.ts (stable, sha256),
+  src/kernel/work-contracts.ts (work vocabulary), src/kernel/verifier-evidence.ts
+  (evidence envelope schemas), src/service/work-runs.ts (WORK_EXECUTORS).
+- github.com/zackproser/ctx-cli @ 06d31a6 — src/contracts.ts (envelope Zod
+  schemas), tests/contracts.test.ts.
+
+The code was copied without history because the sources were spread across
+files in two repositories; behavior is byte-for-byte identical to the copies
+it replaced. Both sources are MIT licensed by Zachary Proser.

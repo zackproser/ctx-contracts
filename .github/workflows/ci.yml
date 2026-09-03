@@ -1,0 +1,35 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: generated schemas are committed
+        run: npm run schemas && git diff --exit-code -- schemas
+      - run: npm pack --dry-run
+
+  # Cross-repo conformance: ctx-cli's envelope validators must keep passing
+  # against THIS revision of the contracts before it can be pinned downstream.
+  downstream-ctx-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: contracts }
+      - uses: actions/checkout@v4
+        with: { repository: zackproser/ctx-cli, path: ctx-cli }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+        working-directory: contracts
+      - run: npm ci && npm install --no-save ../contracts && npm run build && npm test
+        working-directory: ctx-cli

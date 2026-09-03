@@ -1,0 +1,7 @@
+{
+  "contract": "ctx.web-journey.v1",
+  "name": "smoke",
+  "url": "https://ctx.example/app",
+  "fixtures": [{ "name": "desktop", "width": 1440, "height": 900 }, { "name": "phone", "width": 390, "height": 844 }],
+  "steps": [{ "action": "assert", "locator": { "by": "role", "role": "heading", "name": "Ready" }, "check": "visible" }]
+}

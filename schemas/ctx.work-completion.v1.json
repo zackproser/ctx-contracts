@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.work-completion.v1.json",
+  "title": "ctx.work-completion.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.work-completion.v1"
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "shape_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "blocked",
+            "satisfied",
+            "failed"
+          ]
+        }
+      },
+      "required": [
+        "item_id",
+        "revision",
+        "shape_hash",
+        "state"
+      ],
+      "additionalProperties": true
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "node_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "ready",
+              "running",
+              "satisfied",
+              "failed",
+              "waived"
+            ]
+          },
+          "execution": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "job_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "queued",
+                      "running",
+                      "needs_input",
+                      "failed",
+                      "delivered",
+                      "verified"
+                    ]
+                  },
+                  "executor": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "attempt": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "updated_at": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "job_id",
+                  "state",
+                  "executor",
+                  "attempt",
+                  "updated_at"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "item_id",
+          "node_key",
+          "status"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "contract",
+    "task",
+    "nodes"
+  ],
+  "additionalProperties": true
+}

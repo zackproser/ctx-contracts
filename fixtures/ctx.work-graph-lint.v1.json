@@ -1,0 +1,10 @@
+{
+  "contract": "ctx.work-graph-lint.v1",
+  "valid": true,
+  "diagnostics": [],
+  "topology": {
+    "entry_node_keys": ["cli_control_plane", "server_control_plane"],
+    "terminal_node_keys": ["production_join_proof"],
+    "execution_order": ["cli_control_plane", "server_control_plane", "production_join_proof"]
+  }
+}

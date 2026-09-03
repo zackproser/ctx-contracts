@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.todo-handle.v1.json",
+  "title": "ctx.todo-handle.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.todo-handle.v1"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "dispatched",
+        "already_running",
+        "already_complete",
+        "needs_owner"
+      ]
+    },
+    "task_item_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "graph_created": {
+      "type": "boolean"
+    },
+    "graph_repaired": {
+      "type": "boolean"
+    },
+    "graph": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "shape_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "blocked",
+            "satisfied",
+            "failed"
+          ]
+        },
+        "satisfied_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "revision",
+        "shape_hash",
+        "state",
+        "satisfied_count",
+        "required_count"
+      ],
+      "additionalProperties": true
+    },
+    "node_item_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "node_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "job_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "receipt_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "node_item_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "node_title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "executor": {
+            "type": "string",
+            "enum": [
+              "orb",
+              "codex_api",
+              "claude_agent_sdk",
+              "mac_codex"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "needs_input",
+              "failed",
+              "delivered",
+              "verified"
+            ]
+          },
+          "replayed": {
+            "type": "boolean"
+          },
+          "repo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "receipt_id",
+          "job_id",
+          "node_item_id",
+          "executor",
+          "state",
+          "replayed"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "replayed": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fleet_url": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "status",
+    "task_item_id",
+    "graph_created",
+    "graph_repaired",
+    "graph",
+    "node_item_id",
+    "job_id",
+    "receipt_id",
+    "jobs",
+    "replayed",
+    "reason",
+    "work_url",
+    "fleet_url"
+  ],
+  "additionalProperties": true
+}

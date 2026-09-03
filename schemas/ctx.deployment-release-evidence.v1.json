@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.deployment-release-evidence.v1.json",
+  "title": "ctx.deployment-release-evidence.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.deployment-release-evidence.v1"
+    },
+    "base_url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "expected_tag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "public_health": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "type": "string",
+          "const": "ctx.health.v1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "release_tag": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "contract",
+        "ok",
+        "release_tag"
+      ],
+      "additionalProperties": true
+    },
+    "app_health": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "type": "string",
+          "const": "ctx.app-health.v1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "failed_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "maxItems": 40,
+          "default": []
+        }
+      },
+      "required": [
+        "contract",
+        "ok"
+      ],
+      "additionalProperties": true
+    },
+    "failure": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "contract",
+    "base_url",
+    "expected_tag",
+    "public_health",
+    "app_health"
+  ],
+  "additionalProperties": true
+}

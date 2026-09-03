@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.health.v1.json",
+  "title": "ctx.health.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.health.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "release_tag": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "ok",
+    "release_tag"
+  ],
+  "additionalProperties": true
+}

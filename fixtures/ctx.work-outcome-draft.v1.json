@@ -1,0 +1,33 @@
+{
+  "contract": "ctx.work-outcome-draft.v1",
+  "registry_version": "1",
+  "prompt": "Ship the CLI and server lanes, then prove the join in production.",
+  "outcome": {
+    "title": "Two-lane production join",
+    "description": "",
+    "entities": ["zackproser/ctx", "zackproser/ctx-cli"],
+    "nodes": [{
+      "key": "cli_control_plane", "title": "CLI lane", "description": "",
+      "kind": "action", "policy": "required",
+      "cardinality": { "mode": "at_least", "target": 1 },
+      "predicate": { "type": "artifact", "artifact_type": "github_pr" },
+      "evaluator": "ctx.work-run-artifact", "evaluator_version": "1"
+    }],
+    "edges": [],
+    "initial_memberships": []
+  },
+  "steps": [{
+    "key": "cli_control_plane", "node_key": "cli_control_plane", "title": "CLI lane", "detail": "Open the PR.",
+    "verifier_id": "ctx.work-run-artifact", "verifier_version": "1", "verifier_label": "HARNESS RECEIPT",
+    "repository": "zackproser/ctx-cli"
+  }],
+  "extra_receipts": [],
+  "obligations": { "repositories": ["zackproser/ctx", "zackproser/ctx-cli"], "join_requested": true, "parallel_requested": true },
+  "graph_lint": {
+    "contract": "ctx.work-graph-lint.v1", "valid": true, "diagnostics": [],
+    "topology": { "entry_node_keys": ["cli_control_plane"], "terminal_node_keys": ["cli_control_plane"], "execution_order": ["cli_control_plane"] }
+  },
+  "launch_ready": true,
+  "generated_by": "deterministic",
+  "generated_at": "2026-09-03T00:00:00.000Z"
+}
