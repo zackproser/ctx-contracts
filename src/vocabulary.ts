@@ -110,7 +110,7 @@ export const DRAFT_STEP_VERIFIER_LABELS = [
 ] as const;
 export type DraftStepVerifierLabel = typeof DRAFT_STEP_VERIFIER_LABELS[number];
 
-export const DRAFT_RECEIPT_VERIFIER_IDS = ['ctx.deployment-release-verifier', 'ctx.browser-smoke-verifier'] as const;
+export const DRAFT_RECEIPT_VERIFIER_IDS = ['ctx.deployment-release-verifier', 'ctx.browser-smoke-verifier', 'ctx.github-ci-verifier'] as const;
 export type DraftReceiptVerifierId = typeof DRAFT_RECEIPT_VERIFIER_IDS[number];
 
 // --- Obligation IR (ctx.work-obligation-ir.v1) ---------------------------
@@ -120,7 +120,7 @@ export type RepositoryRole = typeof REPOSITORY_ROLES[number];
 export const DELIVERABLE_KINDS = ['pull_request', 'commit', 'document', 'artifact', 'deployment', 'message'] as const;
 export type DeliverableKind = typeof DELIVERABLE_KINDS[number];
 
-export const CHECK_KINDS = ['deployment_release', 'browser_smoke', 'github_merge', 'owner_attestation', 'connector'] as const;
+export const CHECK_KINDS = ['deployment_release', 'browser_smoke', 'github_merge', 'github_checks', 'owner_attestation', 'connector'] as const;
 export type CheckKind = typeof CHECK_KINDS[number];
 
 export const IR_SOURCES = DRAFT_GENERATORS;

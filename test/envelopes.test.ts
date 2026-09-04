@@ -35,6 +35,14 @@ const productionDraft = () => JSON.parse(readFileSync(
 ));
 
 describe('prompt-to-graph MCP responses', () => {
+  it('carries an independently checked GitHub CI obligation and receipt binding', () => {
+    const draft = productionDraft();
+    draft.ir.checks.push({ kind: 'github_checks', target: draft.ir.repositories[0].id,
+      provenance: [{ start: 0, end: 8, text: 'green CI' }] });
+    draft.extra_receipts = [{ id: 'ctx.github-ci-verifier', version: '1', label: 'GitHub CI', selected: true }];
+    expect(WorkOutcomeDraftSchema.parse(draft).ir.checks.at(-1)?.kind).toBe('github_checks');
+    expect(WorkOutcomeDraftSchema.parse(draft).extra_receipts[0]?.id).toBe('ctx.github-ci-verifier');
+  });
   it('rejects draft responses without the server-owned contract and graph lint', () => {
     expect(() => WorkOutcomeDraftSchema.parse({
       contract: 'ctx.work-outcome-draft.v0', outcome: { nodes: [] },
