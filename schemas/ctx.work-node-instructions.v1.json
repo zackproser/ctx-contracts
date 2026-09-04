@@ -78,6 +78,114 @@
         "reason"
       ],
       "additionalProperties": true
+    },
+    "mcp_control": {
+      "type": "object",
+      "properties": {
+        "claim": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "client_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "harness": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "session_ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "attempt": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "lease_expires_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "deadline_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "client_id",
+                "harness",
+                "session_ref",
+                "attempt",
+                "lease_expires_at",
+                "deadline_at"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "graph_generation": {
+          "type": "string",
+          "maxLength": 20,
+          "pattern": "^[0-9]+$"
+        },
+        "steering": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sequence_no": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "event_id",
+              "sequence_no",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 50
+        },
+        "steering_after": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "acknowledged_after": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "may_checkpoint": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "claim",
+        "graph_generation",
+        "steering",
+        "steering_after",
+        "has_more",
+        "acknowledged_after",
+        "may_checkpoint"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

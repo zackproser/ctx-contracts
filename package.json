@@ -1,6 +1,6 @@
 {
   "name": "@ctx/contracts",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "CTX wire contracts: Zod envelopes, generated JSON Schema 2020-12, server-owned vocabulary, and canonical JSON digests shared by ctx and ctx-cli",
   "license": "MIT",
   "type": "module",
