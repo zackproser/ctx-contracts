@@ -298,6 +298,40 @@ export const WorkRunDetailSchema = z.object({
   events: z.array(JsonObject),
 }).passthrough();
 
+const McpSessionRef = z.string().trim().min(1).max(512);
+const McpMutationKey = z.string().min(8).max(128).regex(/^[A-Za-z0-9._:-]+$/);
+const GraphGeneration = z.string().max(20).regex(/^[0-9]+$/);
+
+export const McpWorkClaimInputSchema = z.object({
+  job_id: UUID, node_item_id: UUID, graph_revision: z.number().int().positive(), graph_shape_hash: ShapeHash,
+  harness: z.string().trim().min(1).max(80), session_ref: McpSessionRef,
+  idempotency_key: McpMutationKey,
+}).strict();
+
+export const McpWorkCheckpointInputSchema = z.object({
+  job_id: UUID, attempt: z.number().int().positive(), session_ref: McpSessionRef,
+  graph_revision: z.number().int().positive(), graph_shape_hash: ShapeHash, graph_generation: GraphGeneration,
+  steering_after: z.number().int().nonnegative(),
+  operation: z.enum(['continue', 'needs_input', 'deliver', 'fail']),
+  summary: z.string().max(32768).optional(),
+  evidence_item_ids: z.array(UUID).max(25).optional(),
+  idempotency_key: McpMutationKey,
+}).strict();
+
+export const McpWorkControlSchema = z.object({
+  claim: z.object({
+    client_id: NonEmpty, harness: z.string().min(1).max(80), session_ref: McpSessionRef,
+    attempt: z.number().int().positive(), lease_expires_at: z.string().datetime({ offset: true }),
+    deadline_at: z.string().datetime({ offset: true }),
+  }).strict().nullable(),
+  graph_generation: GraphGeneration,
+  steering: z.array(z.object({
+    event_id: UUID, sequence_no: z.number().int().nonnegative(), message: z.string().max(8192),
+  }).strict()).max(50),
+  steering_after: z.number().int().nonnegative(), has_more: z.boolean(),
+  acknowledged_after: z.number().int().nonnegative(), may_checkpoint: z.boolean(),
+}).strict();
+
 export const WorkNodeInstructionsSchema = z.object({
   contract: z.literal('ctx.work-node-instructions.v1'),
   custody: z.object({
@@ -305,6 +339,17 @@ export const WorkNodeInstructionsSchema = z.object({
     node_item_id: UUID.nullable(), node_key: z.string().nullable(), node_instructions: z.string().nullable(),
   }).passthrough(),
   execution: z.object({ executable: z.boolean(), code: NonEmpty, reason: NonEmpty }).passthrough(),
+  mcp_control: McpWorkControlSchema.optional(),
+}).passthrough();
+
+// The receipt is immutable replay data; instructions and next are fresh reads.
+export const McpWorkMutationResultSchema = z.object({
+  receipt: z.object({
+    id: UUID, job_id: UUID, attempt: z.number().int().positive(),
+    operation: z.enum(['claim', 'continue', 'needs_input', 'deliver', 'fail']), replayed: z.boolean(),
+  }).passthrough(),
+  instructions: WorkNodeInstructionsSchema,
+  next: JsonObject,
 }).passthrough();
 
 export const VerifierBindingSchema = z.object({ id: NonEmpty, version: NonEmpty }).passthrough();
@@ -383,6 +428,10 @@ export type TodoHandle = z.infer<typeof TodoHandleSchema>;
 export type WorkCompletion = z.infer<typeof WorkCompletionSchema>;
 export type WorkRunDetail = z.infer<typeof WorkRunDetailSchema>;
 export type WorkNodeInstructions = z.infer<typeof WorkNodeInstructionsSchema>;
+export type McpWorkClaimInput = z.infer<typeof McpWorkClaimInputSchema>;
+export type McpWorkCheckpointInput = z.infer<typeof McpWorkCheckpointInputSchema>;
+export type McpWorkControl = z.infer<typeof McpWorkControlSchema>;
+export type McpWorkMutationResult = z.infer<typeof McpWorkMutationResultSchema>;
 export type VerifierPlan = z.infer<typeof VerifierPlanSchema>;
 export type WorkRunLaunch = z.infer<typeof WorkRunLaunchSchema>;
 export type DeploymentEvidence = z.infer<typeof DeploymentEvidence>;

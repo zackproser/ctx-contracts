@@ -143,7 +143,8 @@
               "orb",
               "codex_api",
               "claude_agent_sdk",
-              "mac_codex"
+              "mac_codex",
+              "mcp"
             ]
           },
           "state": {

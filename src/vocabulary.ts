@@ -74,7 +74,7 @@ export const COMPLETION_GRAPH_STATES = ['active', 'blocked', 'satisfied', 'faile
 export type CompletionGraphState = typeof COMPLETION_GRAPH_STATES[number];
 
 // --- Run dispatch ---------------------------------------------------------
-export const WORK_EXECUTORS = ['orb', 'codex_api', 'claude_agent_sdk', 'mac_codex'] as const;
+export const WORK_EXECUTORS = ['orb', 'codex_api', 'claude_agent_sdk', 'mac_codex', 'mcp'] as const;
 export type WorkExecutor = typeof WORK_EXECUTORS[number];
 
 export const DELIVERY_MODES = ['report_only', 'pull_request'] as const;

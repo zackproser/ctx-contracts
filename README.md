@@ -122,6 +122,14 @@ await sha256({ schema: 'ctx.work-completion.v1', nodes, edges }); // 64 hex char
 | `@ctx/contracts` | `ctx` (server) | `ctx-cli` | Notes |
 |---|---|---|---|
 | 0.1.x | pins exact commit | supports N and N-1 | first extraction; identical bytes to the in-repo copies it replaced |
+| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, and optional steering/custody in node instructions |
+
+MCP execution keeps harness identity (`harness`, `session_ref`) separate from
+the `mcp` transport. `McpWorkClaimInputSchema` and
+`McpWorkCheckpointInputSchema` reject unknown fields and caller-supplied
+verification state. Checkpoints echo the graph revision, shape hash, decimal
+generation, and steering cursor received from CTX. The mutation result keeps
+an immutable receipt alongside current instruction and next-action reads.
 
 * Envelope literals are versioned in the name (`.v1`). A breaking shape change is a new literal, never a silent edit.
 * Adding an optional field or a passthrough-tolerated field is a minor bump. `ctx` pins an exact commit; `ctx-cli` must keep parsing the previous minor too (the `obligations` and `repository` fields show the pattern: optional on the client, present on the newer server).

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ObligationIRSchema, TodoHandleSchema, VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema,
   WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema,
+  McpWorkClaimInputSchema, McpWorkCheckpointInputSchema, McpWorkMutationResultSchema,
 } from '../src/envelopes.js';
 import { parseEnvelope } from '../src/registry.js';
 
@@ -97,6 +98,27 @@ describe('prompt-to-graph MCP responses', () => {
 });
 
 describe('read-model envelopes', () => {
+  it('retains MCP custody, steering and graph generation alongside the existing instructions', () => {
+    const instruction = JSON.parse(readFileSync(resolve(import.meta.dirname, '../fixtures/ctx.work-node-instructions.v1.mcp.json'), 'utf8'));
+    expect(WorkNodeInstructionsSchema.parse(instruction)).toEqual(instruction);
+    expect(McpWorkMutationResultSchema.parse({
+      receipt: { id: jobId, job_id: jobId, attempt: 1, operation: 'claim', replayed: false },
+      instructions: instruction, next: { contract: 'ctx.next-work-actions.v1', ready: [] },
+    }).instructions.mcp_control?.graph_generation).toBe('9007199254740993');
+    expect(() => WorkNodeInstructionsSchema.parse({ ...instruction,
+      mcp_control: { ...instruction.mcp_control, graph_generation: 9007199254740992 },
+    })).toThrow(/graph_generation/);
+  });
+  it('rejects caller-supplied authority and unsupported terminal states in MCP requests', () => {
+    const claim = { job_id: jobId, node_item_id: nodeId, graph_revision: 1, graph_shape_hash: shapeHash, harness: 'Claude Code', session_ref: 'session:one', idempotency_key: 'mcp:test:claim' };
+    expect(McpWorkClaimInputSchema.parse(claim)).toEqual(claim);
+    expect(() => McpWorkClaimInputSchema.parse({ ...claim, client_id: 'owner' })).toThrow(/client_id/);
+    const checkpoint = { job_id: jobId, attempt: 1, session_ref: 'session:one', graph_revision: 1,
+      graph_generation: '3', graph_shape_hash: shapeHash, steering_after: 7, operation: 'deliver', evidence_item_ids: [nodeId], idempotency_key: 'mcp:test:checkpoint' };
+    expect(McpWorkCheckpointInputSchema.parse(checkpoint)).toEqual(checkpoint);
+    expect(() => McpWorkCheckpointInputSchema.parse({ ...checkpoint, operation: 'verified' })).toThrow(/operation/);
+    expect(() => McpWorkCheckpointInputSchema.parse({ ...checkpoint, passed: true })).toThrow(/passed/);
+  });
   it.each([
     ['ctx.work-completion.v1', WorkCompletionSchema, {
       task: { item_id: taskId, revision: 1, shape_hash: shapeHash, state: 'active' },

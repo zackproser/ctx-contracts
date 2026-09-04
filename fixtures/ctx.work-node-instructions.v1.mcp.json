@@ -1,0 +1,38 @@
+{
+  "contract": "ctx.work-node-instructions.v1",
+  "custody": {
+    "task_item_id": "11111111-1111-4111-8111-111111111111",
+    "graph_revision": 2,
+    "graph_shape_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "node_item_id": null,
+    "node_key": null,
+    "node_instructions": null
+  },
+  "execution": {
+    "executable": false,
+    "code": "unmodeled_task_root",
+    "reason": "Root custody."
+  },
+  "mcp_control": {
+    "claim": {
+      "client_id": "demo-claude",
+      "harness": "Claude Code",
+      "session_ref": "session:one",
+      "attempt": 1,
+      "lease_expires_at": "2026-09-04T17:05:00Z",
+      "deadline_at": "2026-09-04T19:00:00Z"
+    },
+    "graph_generation": "9007199254740993",
+    "steering": [
+      {
+        "event_id": "44444444-4444-4444-8444-444444444444",
+        "sequence_no": 7,
+        "message": "Use the graph-approved interface and retain its CI evidence."
+      }
+    ],
+    "steering_after": 8,
+    "has_more": false,
+    "acknowledged_after": 2,
+    "may_checkpoint": true
+  }
+}
