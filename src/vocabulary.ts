@@ -73,6 +73,14 @@ export type CardinalityMode = typeof CARDINALITY_MODES[number];
 export const COMPLETION_GRAPH_STATES = ['active', 'blocked', 'satisfied', 'failed'] as const;
 export type CompletionGraphState = typeof COMPLETION_GRAPH_STATES[number];
 
+// Advisory next actions in the compact work-status snapshot. These do not
+// confer execution custody or verification authority.
+export const WORK_STATUS_ACTIONS = [
+  'inspect_assignment', 'wait_for_dependencies', 'wait_for_agent',
+  'wait_for_verification', 'request_owner', 'refresh', 'complete',
+] as const;
+export type WorkStatusAction = typeof WORK_STATUS_ACTIONS[number];
+
 // --- Run dispatch ---------------------------------------------------------
 export const WORK_EXECUTORS = ['orb', 'codex_api', 'claude_agent_sdk', 'mac_codex', 'mcp'] as const;
 export type WorkExecutor = typeof WORK_EXECUTORS[number];

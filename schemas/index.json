@@ -6,6 +6,7 @@
     "ctx.work-outcome-draft.v1",
     "ctx.todo-handle.v1",
     "ctx.work-completion.v1",
+    "ctx.work-status.v1",
     "ctx.work-run-detail.v1",
     "ctx.work-node-instructions.v1",
     "ctx.verifier-plan.v1",
