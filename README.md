@@ -69,7 +69,7 @@ const any = parseEnvelope(body);                               // dispatch on bo
 Object.keys(ENVELOPES);                                        // every registered contract literal
 ```
 
-Every read-model envelope is `.passthrough()`: the schema pins the contract literal and the custody fields a client relies on, and forwards everything else untouched. That is what lets a version-N client read a version-N+1 server.
+The extensible read-model envelopes use `.passthrough()`: the schema pins the contract literal and the custody fields a client relies on, and forwards everything else untouched. That lets a version-N client read a version-N+1 server. The compact `ctx.work-status.v1` snapshot instead uses strict objects and explicit size bounds throughout.
 
 | Contract | Schema | What it is |
 |---|---|---|
@@ -78,6 +78,7 @@ Every read-model envelope is `.passthrough()`: the schema pins the contract lite
 | `ctx.work-graph-lint.v1` | `WorkGraphLintSchema` | Topology + diagnostics for a completion graph shape |
 | `ctx.todo-handle.v1` | `TodoHandleSchema` | Governed dispatch result: graph custody, jobs, receipts |
 | `ctx.work-completion.v1` | `WorkCompletionSchema` | Completion-graph read model (status ≠ execution) |
+| `ctx.work-status.v1` | `WorkStatusSchema` | Bounded advisory snapshot: graph evaluation, progress, node execution, and suggested next tools |
 | `ctx.work-run.v1` | `WorkRunLaunchSchema` | Run launch acknowledgment |
 | `ctx.work-run-detail.v1` | `WorkRunDetailSchema` | One run with its event log |
 | `ctx.work-node-instructions.v1` | `WorkNodeInstructionsSchema` | Node custody + executability for an executor |
@@ -86,6 +87,19 @@ Every read-model envelope is `.passthrough()`: the schema pins the contract lite
 | `ctx.deployment-release-evidence.v1` | `DeploymentEvidence` | Release verifier evidence |
 | `ctx.browser-smoke-evidence.v1` | `BrowserEvidence` | Browser verifier evidence |
 | `ctx.health.v1` / `ctx.app-health.v1` | `HealthSchema` / `AppHealthSchema` | Health probes embedded in evidence |
+
+### Compact work status
+
+```ts
+import { GetWorkStatusInputSchema, WorkStatusSchema, type WorkStatus } from '@ctx/contracts';
+
+const input = GetWorkStatusInputSchema.parse({ task_item_id });
+const status: WorkStatus = WorkStatusSchema.parse(await response.json());
+```
+
+The read input accepts only a task UUID. The result contains at most 40 nodes, with bounded titles, reasons, and dependency lists. Its progress counts and node completion statuses describe the graph; each node's nullable execution describes a separate job state. `evaluation_current` reports whether the stored evaluation is current for this snapshot, and `generated_at` identifies when the snapshot was produced.
+
+`action` and `next_tool` are advisory. A snapshot grants no claim, execution permission, lease renewal, or verification authority. Read current instructions and use the applicable claim/checkpoint protocol before executing work. Lease and deadline timestamps are observations, not credentials. The suggested tool can only be `get_work_instructions`, `inspect_work_run`, `inspect_work_state`, or `evaluate_work_gate`, with its corresponding strict UUID arguments; it may also be null. A stale evaluation or a later graph change requires a fresh read or evaluation through the supported tools.
 
 ### JSON Schema
 
@@ -104,7 +118,7 @@ import { WORK_RUN_STATES, WORK_EXECUTORS, COMPLETION_STATUSES, type WorkRunState
 new Option('--executor <executor>').choices([...WORK_EXECUTORS]);
 ```
 
-`WORK_NODE_KINDS`, `WORK_EDGE_KINDS`, `WORK_RESOURCE_TYPES` (alias `ARTIFACT_TYPES`), `WORK_RUN_STATES`, `WORK_RESOURCE_HEALTH`, `COMPLETION_NODE_KINDS`, `COMPLETION_STATUSES`, `COMPLETION_POLICIES`, `CARDINALITY_MODES`, `COMPLETION_GRAPH_STATES`, `WORK_EXECUTORS`, `DELIVERY_MODES`, `EFFORTS`, the compiler lists (`DRAFT_GENERATORS`, `DRAFT_STATUSES`, `DRAFT_FALLBACK_REASONS`, `DRAFT_TEMPLATES`, `DRAFT_STEP_VERIFIER_IDS`, `DRAFT_STEP_VERIFIER_LABELS`, `DRAFT_RECEIPT_VERIFIER_IDS`, `REPOSITORY_ROLES`, `DELIVERABLE_KINDS`, `CHECK_KINDS`), plus the `WorkResource` interface. The server is the only writer of these lists.
+`WORK_NODE_KINDS`, `WORK_EDGE_KINDS`, `WORK_RESOURCE_TYPES` (alias `ARTIFACT_TYPES`), `WORK_RUN_STATES`, `WORK_RESOURCE_HEALTH`, `COMPLETION_NODE_KINDS`, `COMPLETION_STATUSES`, `COMPLETION_POLICIES`, `CARDINALITY_MODES`, `COMPLETION_GRAPH_STATES`, `WORK_STATUS_ACTIONS`, `WORK_EXECUTORS`, `DELIVERY_MODES`, `EFFORTS`, the compiler lists (`DRAFT_GENERATORS`, `DRAFT_STATUSES`, `DRAFT_FALLBACK_REASONS`, `DRAFT_TEMPLATES`, `DRAFT_STEP_VERIFIER_IDS`, `DRAFT_STEP_VERIFIER_LABELS`, `DRAFT_RECEIPT_VERIFIER_IDS`, `REPOSITORY_ROLES`, `DELIVERABLE_KINDS`, `CHECK_KINDS`), plus the `WorkResource` interface. The server is the only writer of these lists.
 
 ### Canonical digest
 

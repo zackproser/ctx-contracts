@@ -1,0 +1,74 @@
+{
+  "contract": "ctx.work-status.v1",
+  "task": {
+    "item_id": "00000000-0000-4000-8000-000000000001",
+    "title": "Verify two parallel deliveries and their integration",
+    "state": "active",
+    "revision": 1,
+    "shape_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evaluation_current": true
+  },
+  "progress": { "total": 3, "required": 3, "required_clear": 1, "required_remaining": 2 },
+  "nodes": [
+    {
+      "item_id": "00000000-0000-4000-8000-000000000002",
+      "node_key": "contracts",
+      "title": "Publish the shared status contract",
+      "kind": "action",
+      "policy": "required",
+      "status": "satisfied",
+      "blocked_by": [],
+      "execution": {
+        "job_id": "00000000-0000-4000-8000-000000000005",
+        "state": "verified",
+        "executor": "mcp",
+        "attempt": 1,
+        "lease_expires_at": null,
+        "deadline_at": "2026-09-04T20:00:00Z"
+      },
+      "action": "complete",
+      "reason": "CTX verified the retained delivery for this node.",
+      "next_tool": null
+    },
+    {
+      "item_id": "00000000-0000-4000-8000-000000000003",
+      "node_key": "service",
+      "title": "Implement the compact status read",
+      "kind": "action",
+      "policy": "required",
+      "status": "running",
+      "blocked_by": [],
+      "execution": {
+        "job_id": "00000000-0000-4000-8000-000000000006",
+        "state": "delivered",
+        "executor": "mcp",
+        "attempt": 1,
+        "lease_expires_at": null,
+        "deadline_at": "2026-09-04T20:00:00Z"
+      },
+      "action": "wait_for_verification",
+      "reason": "The delivery is retained; independent verification is pending.",
+      "next_tool": {
+        "name": "inspect_work_run",
+        "arguments": { "job_id": "00000000-0000-4000-8000-000000000006" }
+      }
+    },
+    {
+      "item_id": "00000000-0000-4000-8000-000000000004",
+      "node_key": "integration",
+      "title": "Verify the combined result",
+      "kind": "verification_gate",
+      "policy": "required",
+      "status": "blocked",
+      "blocked_by": ["00000000-0000-4000-8000-000000000003"],
+      "execution": null,
+      "action": "wait_for_dependencies",
+      "reason": "The service node still needs independent verification.",
+      "next_tool": {
+        "name": "inspect_work_state",
+        "arguments": { "task_item_id": "00000000-0000-4000-8000-000000000001" }
+      }
+    }
+  ],
+  "generated_at": "2026-09-04T19:00:00Z"
+}

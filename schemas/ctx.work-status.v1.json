@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.work-status.v1.json",
+  "title": "ctx.work-status.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.work-status.v1"
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "blocked",
+            "satisfied",
+            "failed"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "shape_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evaluation_current": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "item_id",
+        "title",
+        "state",
+        "revision",
+        "shape_hash",
+        "evaluation_current"
+      ],
+      "additionalProperties": false
+    },
+    "progress": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_clear": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_remaining": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "total",
+        "required",
+        "required_clear",
+        "required_remaining"
+      ],
+      "additionalProperties": false
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "node_key": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "input_set",
+              "action",
+              "artifact_requirement",
+              "verification_gate"
+            ]
+          },
+          "policy": {
+            "type": "string",
+            "enum": [
+              "required",
+              "optional",
+              "waived"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "ready",
+              "running",
+              "satisfied",
+              "failed",
+              "waived"
+            ]
+          },
+          "blocked_by": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 40
+          },
+          "execution": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "job_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "queued",
+                      "running",
+                      "needs_input",
+                      "failed",
+                      "delivered",
+                      "verified"
+                    ]
+                  },
+                  "executor": {
+                    "type": "string",
+                    "enum": [
+                      "orb",
+                      "codex_api",
+                      "claude_agent_sdk",
+                      "mac_codex",
+                      "mcp"
+                    ]
+                  },
+                  "attempt": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "lease_expires_at": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "deadline_at": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "job_id",
+                  "state",
+                  "executor",
+                  "attempt",
+                  "lease_expires_at",
+                  "deadline_at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "inspect_assignment",
+              "wait_for_dependencies",
+              "wait_for_agent",
+              "wait_for_verification",
+              "request_owner",
+              "refresh",
+              "complete"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "next_tool": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "const": "get_work_instructions"
+                      },
+                      "arguments": {
+                        "type": "object",
+                        "properties": {
+                          "job_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "job_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "arguments"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "const": "inspect_work_run"
+                      },
+                      "arguments": {
+                        "type": "object",
+                        "properties": {
+                          "job_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "job_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "arguments"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "const": "inspect_work_state"
+                      },
+                      "arguments": {
+                        "type": "object",
+                        "properties": {
+                          "task_item_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "task_item_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "arguments"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "const": "evaluate_work_gate"
+                      },
+                      "arguments": {
+                        "type": "object",
+                        "properties": {
+                          "task_item_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "task_item_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "arguments"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "item_id",
+          "node_key",
+          "title",
+          "kind",
+          "policy",
+          "status",
+          "blocked_by",
+          "execution",
+          "action",
+          "reason",
+          "next_tool"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 40
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "contract",
+    "task",
+    "progress",
+    "nodes",
+    "generated_at"
+  ],
+  "additionalProperties": false
+}

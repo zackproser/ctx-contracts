@@ -8,7 +8,7 @@ import {
   CARDINALITY_MODES, CHECK_KINDS, COMPLETION_GRAPH_STATES, COMPLETION_NODE_KINDS, COMPLETION_POLICIES,
   COMPLETION_STATUSES, DELIVERABLE_KINDS, DRAFT_FALLBACK_REASONS, DRAFT_GENERATORS, DRAFT_RECEIPT_VERIFIER_IDS,
   DRAFT_STATUSES, DRAFT_STEP_VERIFIER_IDS, DRAFT_STEP_VERIFIER_LABELS, DRAFT_TEMPLATES, IR_SOURCES,
-  REPOSITORY_ROLES, WORK_EXECUTORS, WORK_RUN_STATES,
+  REPOSITORY_ROLES, WORK_EXECUTORS, WORK_RUN_STATES, WORK_STATUS_ACTIONS,
 } from './vocabulary.js';
 
 const NonEmpty = z.string().trim().min(1);
@@ -272,7 +272,70 @@ export const TodoHandleSchema = z.object({
   fleet_url: NonEmpty.nullable(),
 }).passthrough();
 
-// --- Read-model envelopes -------------------------------------------------
+// --- ctx.work-status.v1 ---------------------------------------------------
+// A bounded advisory read. Execution still requires current instructions and
+// the applicable claim protocol; this snapshot never grants custody.
+export const GetWorkStatusInputSchema = z.object({ task_item_id: UUID }).strict();
+
+const WorkStatusNextToolSchema = z.discriminatedUnion('name', [
+  z.object({
+    name: z.literal('get_work_instructions'),
+    arguments: z.object({ job_id: UUID }).strict(),
+  }).strict(),
+  z.object({
+    name: z.literal('inspect_work_run'),
+    arguments: z.object({ job_id: UUID }).strict(),
+  }).strict(),
+  z.object({
+    name: z.literal('inspect_work_state'),
+    arguments: z.object({ task_item_id: UUID }).strict(),
+  }).strict(),
+  z.object({
+    name: z.literal('evaluate_work_gate'),
+    arguments: z.object({ task_item_id: UUID }).strict(),
+  }).strict(),
+]);
+
+export const WorkStatusSchema = z.object({
+  contract: z.literal('ctx.work-status.v1'),
+  task: z.object({
+    item_id: UUID,
+    title: z.string().max(160),
+    state: GraphState,
+    revision: z.number().int().positive(),
+    shape_hash: ShapeHash,
+    evaluation_current: z.boolean(),
+  }).strict(),
+  progress: z.object({
+    total: z.number().int().nonnegative(),
+    required: z.number().int().nonnegative(),
+    required_clear: z.number().int().nonnegative(),
+    required_remaining: z.number().int().nonnegative(),
+  }).strict(),
+  nodes: z.array(z.object({
+    item_id: UUID,
+    node_key: z.string().max(120),
+    title: z.string().max(160),
+    kind: z.enum(COMPLETION_NODE_KINDS),
+    policy: z.enum(COMPLETION_POLICIES),
+    status: CompletionStatus,
+    blocked_by: z.array(UUID).max(40),
+    execution: z.object({
+      job_id: UUID,
+      state: WorkRunState,
+      executor: z.enum(WORK_EXECUTORS),
+      attempt: z.number().int().nonnegative(),
+      lease_expires_at: z.string().datetime({ offset: true }).nullable(),
+      deadline_at: z.string().datetime({ offset: true }).nullable(),
+    }).strict().nullable(),
+    action: z.enum(WORK_STATUS_ACTIONS),
+    reason: z.string().max(240),
+    next_tool: WorkStatusNextToolSchema.nullable(),
+  }).strict()).max(40),
+  generated_at: z.string().datetime({ offset: true }),
+}).strict();
+
+// --- Extensible read-model envelopes -------------------------------------
 // Only the contract literal plus the custody fields clients rely on. Everything
 // else passes through unchanged so an N+1 server never breaks an N client.
 export const WorkCompletionSchema = z.object({
@@ -426,6 +489,8 @@ export type ObligationIR = z.infer<typeof ObligationIRSchema>;
 export type Span = z.infer<typeof SpanSchema>;
 export type TodoHandle = z.infer<typeof TodoHandleSchema>;
 export type WorkCompletion = z.infer<typeof WorkCompletionSchema>;
+export type GetWorkStatusInput = z.infer<typeof GetWorkStatusInputSchema>;
+export type WorkStatus = z.infer<typeof WorkStatusSchema>;
 export type WorkRunDetail = z.infer<typeof WorkRunDetailSchema>;
 export type WorkNodeInstructions = z.infer<typeof WorkNodeInstructionsSchema>;
 export type McpWorkClaimInput = z.infer<typeof McpWorkClaimInputSchema>;

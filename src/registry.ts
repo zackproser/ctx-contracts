@@ -4,7 +4,7 @@ import type { z } from 'zod';
 import {
   AppHealthSchema, BrowserEvidence, DeploymentEvidence, HealthSchema, ObligationIRSchema, TodoHandleSchema,
   VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema, WorkGraphLintSchema,
-  WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema,
+  WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema, WorkStatusSchema,
 } from './envelopes.js';
 
 export const ENVELOPES = {
@@ -14,6 +14,7 @@ export const ENVELOPES = {
   'ctx.work-outcome-draft.v1': WorkOutcomeDraftSchema,
   'ctx.todo-handle.v1': TodoHandleSchema,
   'ctx.work-completion.v1': WorkCompletionSchema,
+  'ctx.work-status.v1': WorkStatusSchema,
   'ctx.work-run-detail.v1': WorkRunDetailSchema,
   'ctx.work-node-instructions.v1': WorkNodeInstructionsSchema,
   'ctx.verifier-plan.v1': VerifierPlanSchema,
