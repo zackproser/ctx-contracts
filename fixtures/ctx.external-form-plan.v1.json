@@ -1,0 +1,43 @@
+{
+  "contract": "ctx.external-form-plan.v1",
+  "url": "https://portal.example/case/42",
+  "identity": {
+    "locator": {
+      "by": "testId",
+      "testId": "project"
+    },
+    "text": "42"
+  },
+  "fields": [
+    {
+      "key": "experience",
+      "locator": {
+        "by": "label",
+        "label": "Experience",
+        "exact": true
+      },
+      "control": "text"
+    }
+  ],
+  "submit": {
+    "by": "role",
+    "role": "button",
+    "name": "Submit",
+    "exact": true
+  },
+  "confirmation": {
+    "locator": {
+      "by": "testId",
+      "testId": "receipt"
+    },
+    "text": "Saved"
+  },
+  "errors": [
+    {
+      "by": "role",
+      "role": "alert",
+      "exact": false
+    }
+  ],
+  "timeout_ms": 1000
+}
