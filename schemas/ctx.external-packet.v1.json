@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.external-packet.v1.json",
+  "title": "ctx.external-packet.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.external-packet.v1"
+    },
+    "case_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "compliance",
+        "availability"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 8000
+          },
+          "facts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "item_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "revision": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "excerpt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "valid_until": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "item_id",
+                "revision",
+                "excerpt",
+                "valid_until"
+              ],
+              "additionalProperties": true
+            },
+            "maxItems": 30
+          },
+          "personal_attestation": {
+            "type": "boolean",
+            "default": false
+          },
+          "owner_confirmed": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "key",
+          "question",
+          "value",
+          "facts"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 1,
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "contract",
+    "case_id",
+    "purpose",
+    "version",
+    "answers"
+  ],
+  "additionalProperties": false
+}

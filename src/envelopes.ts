@@ -501,3 +501,49 @@ export type VerifierPlan = z.infer<typeof VerifierPlanSchema>;
 export type WorkRunLaunch = z.infer<typeof WorkRunLaunchSchema>;
 export type DeploymentEvidence = z.infer<typeof DeploymentEvidence>;
 export type BrowserEvidence = z.infer<typeof BrowserEvidence>;
+
+// --- External mail/web work: declarations are separate from trusted readback. ---
+const ExternalId = z.string().min(1).max(200);
+const ExternalDigest = z.string().regex(/^[a-f0-9]{64}$/);
+export const ExternalFactSchema = z.object({
+  item_id: z.string().uuid(), revision: z.number().int().positive(),
+  excerpt: z.string().min(1).max(4000), valid_until: z.string().datetime({ offset: true }),
+});
+export const ExternalAnswerSchema = z.object({
+  key: ExternalId, question: z.string().min(1).max(4000), value: z.string().max(8000),
+  facts: z.array(ExternalFactSchema).max(30),
+  // Conflicts, confidentiality, and legal consent need an explicit current answer.
+  personal_attestation: z.boolean().default(false),
+  owner_confirmed: z.boolean().default(false),
+});
+export const ExternalPacketSchema = z.object({
+  contract: z.literal('ctx.external-packet.v1'), case_id: z.string().uuid(),
+  purpose: z.enum(['compliance', 'availability']), version: z.number().int().positive(),
+  answers: z.array(ExternalAnswerSchema).min(1).max(100),
+}).strict();
+export type ExternalPacket = z.infer<typeof ExternalPacketSchema>;
+
+export const ExternalFormPlanSchema = z.object({
+  contract: z.literal('ctx.external-form-plan.v1'), url: z.string().url(),
+  // Both must be visible on every inspection and again immediately before submit.
+  identity: z.object({ locator: LocatorSchema, text: ExternalId }),
+  fields: z.array(z.object({ key: ExternalId, locator: LocatorSchema,
+    control: z.enum(['text', 'select', 'checkbox']),
+  })).min(1).max(100),
+  submit: LocatorSchema,
+  confirmation: z.object({ locator: LocatorSchema, text: ExternalId }),
+  // Required: a provider error can coexist with an otherwise usable form.
+  errors: z.array(LocatorSchema).min(1).max(20),
+  timeout_ms: z.number().int().min(100).max(60000).default(15000),
+}).strict();
+export type ExternalFormPlan = z.infer<typeof ExternalFormPlanSchema>;
+
+export const ExternalFormEvidenceSchema = z.object({
+  contract: z.literal('ctx.external-form-evidence.v1'), operation_id: z.string().uuid(),
+  packet_digest: ExternalDigest, plan_digest: ExternalDigest,
+  observed_at: z.string().datetime({ offset: true }), url: z.string().url(),
+  identity_text: z.string().max(4000), confirmation_text: z.string().max(4000),
+  values: z.record(z.string(), z.string().max(8000)), errors: z.array(z.string().max(4000)).max(50),
+  phase: z.enum(['inspected', 'submitted', 'reconciled', 'uncertain', 'blocked']),
+}).strict();
+export type ExternalFormEvidence = z.infer<typeof ExternalFormEvidenceSchema>;

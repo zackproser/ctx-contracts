@@ -1,0 +1,23 @@
+{
+  "contract": "ctx.external-packet.v1",
+  "case_id": "10000000-0000-4000-8000-000000000001",
+  "purpose": "compliance",
+  "version": 1,
+  "answers": [
+    {
+      "key": "experience",
+      "question": "Relevant experience?",
+      "value": "Built a context service",
+      "facts": [
+        {
+          "item_id": "10000000-0000-4000-8000-000000000001",
+          "revision": 1,
+          "excerpt": "Built a context service",
+          "valid_until": "2026-12-01T00:00:00Z"
+        }
+      ],
+      "personal_attestation": false,
+      "owner_confirmed": false
+    }
+  ]
+}

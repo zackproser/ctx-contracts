@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.external-form-evidence.v1.json",
+  "title": "ctx.external-form-evidence.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.external-form-evidence.v1"
+    },
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "packet_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "plan_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "identity_text": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "confirmation_text": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "values": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 8000
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "maxItems": 50
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "inspected",
+        "submitted",
+        "reconciled",
+        "uncertain",
+        "blocked"
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "operation_id",
+    "packet_digest",
+    "plan_digest",
+    "observed_at",
+    "url",
+    "identity_text",
+    "confirmation_text",
+    "values",
+    "errors",
+    "phase"
+  ],
+  "additionalProperties": false
+}
