@@ -9,9 +9,18 @@ import {
   COMPLETION_STATUSES, DELIVERABLE_KINDS, DRAFT_FALLBACK_REASONS, DRAFT_GENERATORS, DRAFT_RECEIPT_VERIFIER_IDS,
   DRAFT_STATUSES, DRAFT_STEP_VERIFIER_IDS, DRAFT_STEP_VERIFIER_LABELS, DRAFT_TEMPLATES, IR_SOURCES,
   REPOSITORY_ROLES, WORK_EXECUTORS, WORK_RUN_STATES, WORK_STATUS_ACTIONS,
+  EXPERT_CALL_TASK, EXPERT_NETWORK_PROVIDERS,
 } from './vocabulary.js';
 
 const NonEmpty = z.string().trim().min(1);
+
+// Stored under a native task's existing attrs.handled_task. No new executor or
+// evidence vocabulary: the existing completion graph still owns completion.
+export const ExpertCallTaskMetadataSchema = z.object({
+  task_type: z.literal(EXPERT_CALL_TASK.id),
+  provider: z.enum(EXPERT_NETWORK_PROVIDERS),
+}).strict();
+export type ExpertCallTaskMetadata = z.infer<typeof ExpertCallTaskMetadataSchema>;
 
 // --- ctx.web-journey.v1 ---------------------------------------------------
 export const LocatorSchema = z.discriminatedUnion('by', [
