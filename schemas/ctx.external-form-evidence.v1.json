@@ -51,6 +51,10 @@
       },
       "maxItems": 50
     },
+    "readback_context": {
+      "type": "string",
+      "const": "fresh"
+    },
     "phase": {
       "type": "string",
       "enum": [
