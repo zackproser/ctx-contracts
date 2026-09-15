@@ -1555,7 +1555,7 @@
             "locator",
             "text"
           ],
-          "additionalProperties": true
+          "additionalProperties": false
         },
         {
           "type": "object",
