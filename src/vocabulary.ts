@@ -12,6 +12,18 @@ export type WorkNodeKind = typeof WORK_NODE_KINDS[number];
 export const CREATABLE_WORK_NODE_KINDS = ['project', 'task', 'reference'] as const;
 export type CreatableWorkNodeKind = typeof CREATABLE_WORK_NODE_KINDS[number];
 
+// A task family describes the owner's outcome, independently of executor jobs.
+// Classification is never an authorization or a promise of provider support.
+export const EXPERT_CALL_TASK = {
+  id: 'expert_consultation', label: 'Expert calls',
+  description: 'Prepare an expert consultation, complete required packets, and arrange the call.',
+} as const;
+export const EXPERT_NETWORK_PROVIDERS = ['alphasights', 'glg', 'tegus', 'guidepoint'] as const;
+export type ExpertNetworkProvider = typeof EXPERT_NETWORK_PROVIDERS[number];
+export const EXPERT_NETWORK_LABELS: Record<ExpertNetworkProvider, string> = {
+  alphasights: 'AlphaSights', glg: 'GLG', tegus: 'Tegus', guidepoint: 'Guidepoint',
+};
+
 export const WORK_EDGE_KINDS = [
   'contains', 'blocks', 'depends_on', 'relates_to', 'evidence_for', 'delivers',
 ] as const;
