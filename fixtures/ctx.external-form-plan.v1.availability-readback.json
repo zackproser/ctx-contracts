@@ -1,0 +1,73 @@
+{
+  "contract": "ctx.external-form-plan.v1",
+  "url": "https://portal.example/case/42",
+  "identity": {
+    "locator": {
+      "by": "testId",
+      "testId": "project"
+    },
+    "text": "42"
+  },
+  "fields": [
+    {
+      "key": "experience",
+      "locator": {
+        "by": "label",
+        "label": "Experience",
+        "exact": true
+      },
+      "control": "text"
+    }
+  ],
+  "submit": {
+    "by": "role",
+    "role": "button",
+    "name": "Submit",
+    "exact": true
+  },
+  "confirmation": {
+    "kind": "alphasights-availability",
+    "url": "https://quick-availability.alphasights.com/proxy/availability/availability/advisors/fixture-advisor",
+    "baseline": {
+      "advisor_name": "Fixture Advisor",
+      "timezone": "UTC",
+      "slots": [],
+      "observed_at": "2026-09-15T12:00:00.000Z"
+    }
+  },
+  "errors": [
+    {
+      "by": "role",
+      "role": "alert",
+      "exact": false
+    }
+  ],
+  "timeout_ms": 1000,
+  "submit_confirmation": {
+    "prompt": {
+      "locator": {
+        "by": "testId",
+        "testId": "missing-dates"
+      },
+      "text": "Some dates have no availability."
+    },
+    "submit": {
+      "locator": {
+        "by": "testId",
+        "testId": "confirm-save"
+      },
+      "text": "Save Availability"
+    },
+    "guards": [
+      {
+        "locator": {
+          "by": "role",
+          "role": "button",
+          "name": "Go Back",
+          "exact": true
+        },
+        "text": "Go Back"
+      }
+    ]
+  }
+}
