@@ -554,6 +554,13 @@ export const ExternalFormPlanSchema = z.object({
   ])).min(1).max(100),
   guards: z.array(ExternalVisibleTextSchema).min(1).max(20).optional(),
   submit: LocatorSchema,
+  // At most one optional confirmation after the first click. All visible text
+  // is authorized with the plan; this is not a retry or a second mutation.
+  submit_confirmation: z.object({
+    prompt: ExternalVisibleTextSchema,
+    submit: ExternalVisibleTextSchema,
+    guards: z.array(ExternalVisibleTextSchema).min(1).max(10),
+  }).strict().optional(),
   confirmation: z.object({ locator: LocatorSchema, text: ExternalId }),
   // Required: a provider error can coexist with an otherwise usable form.
   errors: z.array(LocatorSchema).min(1).max(20),
