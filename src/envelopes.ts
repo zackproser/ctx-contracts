@@ -537,6 +537,23 @@ const ExternalToggleStateSchema = z.object({
   attribute: z.enum(['class', 'aria-pressed', 'aria-checked', 'data-state']),
   value: ExternalId,
 }).strict();
+// Normalized provider state. Metadata stays bound to the reviewed advisor and timezone.
+export const ExternalAvailabilityStateSchema = z.object({
+  advisor_name: z.string().min(1).max(200), timezone: z.string().min(1).max(100),
+  slots: z.array(z.object({
+    starts_at: z.string().datetime().max(32), ends_at: z.string().datetime().max(32),
+  }).strict()).max(1000),
+}).strict();
+export const ExternalAvailabilitySnapshotSchema = ExternalAvailabilityStateSchema.extend({
+  observed_at: z.string().datetime({ offset: true }),
+});
+export type ExternalAvailabilityState = z.infer<typeof ExternalAvailabilityStateSchema>;
+export type ExternalAvailabilitySnapshot = z.infer<typeof ExternalAvailabilitySnapshotSchema>;
+export const AlphaSightsAvailabilityConfirmationSchema = z.object({
+  kind: z.literal('alphasights-availability'), url: z.string().url(),
+  baseline: ExternalAvailabilitySnapshotSchema,
+}).strict();
+export type AlphaSightsAvailabilityConfirmation = z.infer<typeof AlphaSightsAvailabilityConfirmationSchema>;
 export const ExternalFormPlanSchema = z.object({
   contract: z.literal('ctx.external-form-plan.v1'), url: z.string().url(),
   // Both must be visible on every inspection and again immediately before submit.
@@ -561,7 +578,10 @@ export const ExternalFormPlanSchema = z.object({
     submit: ExternalVisibleTextSchema,
     guards: z.array(ExternalVisibleTextSchema).min(1).max(10),
   }).strict().optional(),
-  confirmation: z.object({ locator: LocatorSchema, text: ExternalId }),
+  confirmation: z.union([
+    z.object({ locator: LocatorSchema, text: ExternalId }),
+    AlphaSightsAvailabilityConfirmationSchema,
+  ]),
   // Required: a provider error can coexist with an otherwise usable form.
   errors: z.array(LocatorSchema).min(1).max(20),
   timeout_ms: z.number().int().min(100).max(60000).default(15000),
@@ -575,6 +595,9 @@ export const ExternalFormEvidenceSchema = z.object({
   identity_text: z.string().max(4000), confirmation_text: z.string().max(4000),
   values: z.record(z.string(), z.string().max(8000)), errors: z.array(z.string().max(4000)).max(50),
   readback_context: z.literal('fresh').optional(),
+  availability_readback: ExternalAvailabilitySnapshotSchema.extend({
+    url: z.string().url(), status: z.literal(200),
+  }).strict().optional(),
   phase: z.enum(['inspected', 'submitted', 'reconciled', 'uncertain', 'blocked']),
 }).strict();
 export type ExternalFormEvidence = z.infer<typeof ExternalFormEvidenceSchema>;

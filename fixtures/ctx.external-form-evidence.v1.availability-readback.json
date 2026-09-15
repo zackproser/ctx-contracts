@@ -1,0 +1,24 @@
+{
+  "contract": "ctx.external-form-evidence.v1",
+  "operation_id": "10000000-0000-4000-8000-000000000001",
+  "packet_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "observed_at": "2026-09-14T12:00:00Z",
+  "url": "https://portal.example/case/42",
+  "identity_text": "42",
+  "confirmation_text": "",
+  "values": {
+    "experience": "Built a context service"
+  },
+  "errors": [],
+  "phase": "submitted",
+  "availability_readback": {
+    "advisor_name": "Fixture Advisor",
+    "timezone": "UTC",
+    "slots": [],
+    "observed_at": "2026-09-15T12:00:00.000Z",
+    "url": "https://quick-availability.alphasights.com/proxy/availability/availability/advisors/fixture-advisor",
+    "status": 200
+  },
+  "readback_context": "fresh"
+}

@@ -55,6 +55,66 @@
       "type": "string",
       "const": "fresh"
     },
+    "availability_readback": {
+      "type": "object",
+      "properties": {
+        "advisor_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "starts_at": {
+                "type": "string",
+                "format": "date-time",
+                "maxLength": 32
+              },
+              "ends_at": {
+                "type": "string",
+                "format": "date-time",
+                "maxLength": 32
+              }
+            },
+            "required": [
+              "starts_at",
+              "ends_at"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1000
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "status": {
+          "type": "number",
+          "const": 200
+        }
+      },
+      "required": [
+        "advisor_name",
+        "timezone",
+        "slots",
+        "observed_at",
+        "url",
+        "status"
+      ],
+      "additionalProperties": false
+    },
     "phase": {
       "type": "string",
       "enum": [
