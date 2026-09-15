@@ -579,7 +579,7 @@ export const ExternalFormPlanSchema = z.object({
     guards: z.array(ExternalVisibleTextSchema).min(1).max(10),
   }).strict().optional(),
   confirmation: z.union([
-    z.object({ locator: LocatorSchema, text: ExternalId }),
+    z.object({ locator: LocatorSchema, text: ExternalId }).strict(),
     AlphaSightsAvailabilityConfirmationSchema,
   ]),
   // Required: a provider error can coexist with an otherwise usable form.
