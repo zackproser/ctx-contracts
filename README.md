@@ -166,3 +166,5 @@ npm run typecheck
 ## License
 
 MIT, see [LICENSE](LICENSE). Extracted from `ctx` and `ctx-cli`; see [NOTICE](NOTICE) for the source commits.
+
+`ctx.external-form-plan.v1` may declare one optional `submit_confirmation` with an exact visible prompt, exact button text and required visible guards. It is included in the authorized plan digest; omitted steps preserve existing plan bytes. The broker may click it only before any provider mutation, and the entire attempt still permits at most one mutation. The dialog is never evidence of a saved form; completion requires independent fresh readback.
