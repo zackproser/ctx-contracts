@@ -523,13 +523,27 @@ export const ExternalPacketSchema = z.object({
 }).strict();
 export type ExternalPacket = z.infer<typeof ExternalPacketSchema>;
 
+const ExternalVisibleTextSchema = z.object({ locator: LocatorSchema, text: ExternalId }).strict();
+const ExternalToggleStateSchema = z.object({
+  attribute: z.enum(['class', 'aria-pressed', 'aria-checked', 'data-state']),
+  value: ExternalId,
+}).strict();
 export const ExternalFormPlanSchema = z.object({
   contract: z.literal('ctx.external-form-plan.v1'), url: z.string().url(),
   // Both must be visible on every inspection and again immediately before submit.
   identity: z.object({ locator: LocatorSchema, text: ExternalId }),
-  fields: z.array(z.object({ key: ExternalId, locator: LocatorSchema,
-    control: z.enum(['text', 'select', 'checkbox']),
-  })).min(1).max(100),
+  fields: z.array(z.union([
+    z.object({ key: ExternalId, locator: LocatorSchema,
+      control: z.enum(['text', 'select', 'checkbox']),
+    }).strict(),
+    // Date tabs and slot buttons use the same typed locator vocabulary as forms.
+    // Navigation is checked before every read, including fresh-session readback.
+    z.object({ key: ExternalId, locator: LocatorSchema, control: z.literal('toggle'),
+      selected: ExternalToggleStateSchema,
+      navigate: z.object({ locator: LocatorSchema, selected: ExternalToggleStateSchema }).strict().optional(),
+    }).strict(),
+  ])).min(1).max(100),
+  guards: z.array(ExternalVisibleTextSchema).min(1).max(20).optional(),
   submit: LocatorSchema,
   confirmation: z.object({ locator: LocatorSchema, text: ExternalId }),
   // Required: a provider error can coexist with an otherwise usable form.
@@ -544,6 +558,7 @@ export const ExternalFormEvidenceSchema = z.object({
   observed_at: z.string().datetime({ offset: true }), url: z.string().url(),
   identity_text: z.string().max(4000), confirmation_text: z.string().max(4000),
   values: z.record(z.string(), z.string().max(8000)), errors: z.array(z.string().max(4000)).max(50),
+  readback_context: z.literal('fresh').optional(),
   phase: z.enum(['inspected', 'submitted', 'reconciled', 'uncertain', 'blocked']),
 }).strict();
 export type ExternalFormEvidence = z.infer<typeof ExternalFormEvidenceSchema>;
