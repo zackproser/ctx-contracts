@@ -535,7 +535,7 @@ export const ExternalFormPlanSchema = z.object({
   fields: z.array(z.union([
     z.object({ key: ExternalId, locator: LocatorSchema,
       control: z.enum(['text', 'select', 'checkbox']),
-    }).strict(),
+    }),
     // Date tabs and slot buttons use the same typed locator vocabulary as forms.
     // Navigation is checked before every read, including fresh-session readback.
     z.object({ key: ExternalId, locator: LocatorSchema, control: z.literal('toggle'),

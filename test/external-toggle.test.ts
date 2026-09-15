@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const base = JSON.parse(readFileSync(new URL('../fixtures/ctx.external-form-plan.v1.json', import.meta.url), 'utf8'));
 it('keeps existing form plans byte-compatible while requiring declared toggle state', () => {
   expect(ExternalFormPlanSchema.parse(base)).toEqual(base);
+  expect(ExternalFormPlanSchema.parse({ ...base, fields: base.fields.map((f: object)=>({...f,provider_hint:'legacy'})) })).toEqual(base);
   const toggle = { key: 'slot', control: 'toggle', locator: { by: 'role', role: 'button', name: '01:00 PM' },
     selected: { attribute: 'class', value: 'tab-active' },
     navigate: { locator: { by: 'text', text: '16 Wed' }, selected: { attribute: 'class', value: 'tab-active' } } };

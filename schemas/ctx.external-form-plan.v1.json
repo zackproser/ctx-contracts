@@ -317,7 +317,7 @@
               "locator",
               "control"
             ],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           {
             "type": "object",
