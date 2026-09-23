@@ -33,6 +33,7 @@
         "confirmation.requested",
         "mutation.requested",
         "mutation.finished",
+        "request.blocked",
         "readback.started",
         "readback.verified",
         "attempt.finished"
@@ -42,6 +43,15 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 99
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "third_party",
+        "unauthorized",
+        "payload_mismatch",
+        "lease_expired"
+      ]
     },
     "phase": {
       "type": "string",
