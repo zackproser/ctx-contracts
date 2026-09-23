@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.external-form-step.v1.json",
+  "title": "ctx.external-form-step.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.external-form-step.v1"
+    },
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1024
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "step": {
+      "type": "string",
+      "enum": [
+        "navigation.started",
+        "identity.verified",
+        "field.fill_started",
+        "field.filled",
+        "answers.verified",
+        "submit.requested",
+        "confirmation.requested",
+        "mutation.requested",
+        "mutation.finished",
+        "readback.started",
+        "readback.verified",
+        "attempt.finished"
+      ]
+    },
+    "field_index": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 99
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "reconciled",
+        "uncertain",
+        "blocked"
+      ]
+    },
+    "evidence_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "contract",
+    "operation_id",
+    "sequence",
+    "at",
+    "step"
+  ],
+  "additionalProperties": false
+}
