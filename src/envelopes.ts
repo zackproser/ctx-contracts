@@ -560,7 +560,7 @@ export const ExternalFormPlanSchema = z.object({
   identity: z.object({ locator: LocatorSchema, text: ExternalId }),
   fields: z.array(z.union([
     z.object({ key: ExternalId, locator: LocatorSchema,
-      control: z.enum(['text', 'select', 'checkbox']),
+      control: z.enum(['text', 'select', 'checkbox', 'radio']),
     }),
     // Date tabs and slot buttons use the same typed locator vocabulary as forms.
     // Navigation is checked before every read, including fresh-session readback.
@@ -571,6 +571,14 @@ export const ExternalFormPlanSchema = z.object({
   ])).min(1).max(100),
   guards: z.array(ExternalVisibleTextSchema).min(1).max(20).optional(),
   submit: LocatorSchema,
+  // Optional for old readbacks; new generic submissions require an exact,
+  // flat payload binding. Complex/autosaving forms need a dedicated adapter.
+  request: z.object({
+    url: z.string().url(), method: z.enum(['POST', 'PUT', 'PATCH']),
+    encoding: z.enum(['json', 'form']),
+    answer_fields: z.array(z.object({ key: ExternalId, field: ExternalId }).strict()).min(1).max(100),
+    static_fields: z.record(z.string().max(8000)),
+  }).strict().optional(),
   // At most one optional confirmation after the first click. All visible text
   // is authorized with the plan; this is not a retry or a second mutation.
   submit_confirmation: z.object({
@@ -601,3 +609,17 @@ export const ExternalFormEvidenceSchema = z.object({
   phase: z.enum(['inspected', 'submitted', 'reconciled', 'uncertain', 'blocked']),
 }).strict();
 export type ExternalFormEvidence = z.infer<typeof ExternalFormEvidenceSchema>;
+
+// Redacted action journal. This records observations and write intent, never
+// completion authority. Sequence is local to one fenced browser attempt.
+export const ExternalFormStepSchema = z.object({
+  contract: z.literal('ctx.external-form-step.v1'), operation_id: z.string().uuid(),
+  sequence: z.number().int().min(1).max(1024), at: z.string().datetime({ offset: true }),
+  step: z.enum(['navigation.started', 'identity.verified', 'field.fill_started', 'field.filled',
+    'answers.verified', 'submit.requested', 'confirmation.requested', 'mutation.requested',
+    'mutation.finished', 'readback.started', 'readback.verified', 'attempt.finished']),
+  field_index: z.number().int().min(0).max(99).optional(),
+  phase: z.enum(['submitted', 'reconciled', 'uncertain', 'blocked']).optional(),
+  evidence_digest: ExternalDigest.optional(),
+}).strict();
+export type ExternalFormStep = z.infer<typeof ExternalFormStepSchema>;

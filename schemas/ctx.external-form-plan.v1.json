@@ -308,7 +308,8 @@
                 "enum": [
                   "text",
                   "select",
-                  "checkbox"
+                  "checkbox",
+                  "radio"
                 ]
               }
             },
@@ -950,6 +951,70 @@
           "additionalProperties": true
         }
       ]
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "POST",
+            "PUT",
+            "PATCH"
+          ]
+        },
+        "encoding": {
+          "type": "string",
+          "enum": [
+            "json",
+            "form"
+          ]
+        },
+        "answer_fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "field": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            },
+            "required": [
+              "key",
+              "field"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "static_fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 8000
+          }
+        }
+      },
+      "required": [
+        "url",
+        "method",
+        "encoding",
+        "answer_fields",
+        "static_fields"
+      ],
+      "additionalProperties": false
     },
     "submit_confirmation": {
       "type": "object",

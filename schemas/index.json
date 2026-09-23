@@ -3,6 +3,7 @@
     "ctx.external-packet.v1",
     "ctx.external-form-plan.v1",
     "ctx.external-form-evidence.v1",
+    "ctx.external-form-step.v1",
     "ctx.web-journey.v1",
     "ctx.work-graph-lint.v1",
     "ctx.work-obligation-ir.v1",

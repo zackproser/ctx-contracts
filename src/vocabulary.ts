@@ -23,6 +23,12 @@ export type ExpertNetworkProvider = typeof EXPERT_NETWORK_PROVIDERS[number];
 export const EXPERT_NETWORK_LABELS: Record<ExpertNetworkProvider, string> = {
   alphasights: 'AlphaSights', glg: 'GLG', tegus: 'Tegus', guidepoint: 'Guidepoint',
 };
+// Exact authenticated sender domains. Link domains are separately constrained by
+// each adapter; recognizing a provider never grants authority to submit a form.
+export const EXPERT_NETWORK_DOMAINS: Record<ExpertNetworkProvider, readonly string[]> = {
+  alphasights: ['alphasights.com'], glg: ['glgroup.com', 'glg.it'],
+  tegus: ['tegus.com'], guidepoint: ['guidepointglobal.com', 'guidepoint.com'],
+};
 
 export const WORK_EDGE_KINDS = [
   'contains', 'blocks', 'depends_on', 'relates_to', 'evidence_for', 'delivers',
