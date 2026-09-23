@@ -522,6 +522,7 @@ export const ExternalAnswerSchema = z.object({
   key: ExternalId, question: z.string().min(1).max(4000), value: z.string().max(8000),
   facts: z.array(ExternalFactSchema).max(30),
   // Conflicts, confidentiality, and legal consent need an explicit current answer.
+  declaration_kind: z.enum(['process', 'personal']).optional(),
   personal_attestation: z.boolean().default(false),
   owner_confirmed: z.boolean().default(false),
 });
@@ -617,8 +618,9 @@ export const ExternalFormStepSchema = z.object({
   sequence: z.number().int().min(1).max(1024), at: z.string().datetime({ offset: true }),
   step: z.enum(['navigation.started', 'identity.verified', 'field.fill_started', 'field.filled',
     'answers.verified', 'submit.requested', 'confirmation.requested', 'mutation.requested',
-    'mutation.finished', 'readback.started', 'readback.verified', 'attempt.finished']),
+    'mutation.finished', 'request.blocked', 'readback.started', 'readback.verified', 'attempt.finished']),
   field_index: z.number().int().min(0).max(99).optional(),
+  reason: z.enum(['third_party', 'unauthorized', 'payload_mismatch', 'lease_expired']).optional(),
   phase: z.enum(['submitted', 'reconciled', 'uncertain', 'blocked']).optional(),
   evidence_digest: ExternalDigest.optional(),
 }).strict();

@@ -1,0 +1,8 @@
+{
+  "contract": "ctx.external-form-step.v1",
+  "operation_id": "10000000-0000-4000-8000-000000000001",
+  "sequence": 2,
+  "at": "2026-09-23T14:00:01.000Z",
+  "step": "request.blocked",
+  "reason": "third_party"
+}

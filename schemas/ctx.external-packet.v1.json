@@ -75,6 +75,13 @@
             },
             "maxItems": 30
           },
+          "declaration_kind": {
+            "type": "string",
+            "enum": [
+              "process",
+              "personal"
+            ]
+          },
           "personal_attestation": {
             "type": "boolean",
             "default": false
