@@ -1,0 +1,31 @@
+{
+  "contract": "ctx.orb-steer.v1",
+  "idempotency_key": "managed:wake:example",
+  "issued_at": "2026-10-27T22:00:00Z",
+  "job": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "node_item_id": null,
+    "attempt": 1,
+    "provider_thread_id": "T-11111111-1111-4111-8111-111111111111",
+    "runtime": {
+      "contract": "ctx.managed-orb-assignment.v1",
+      "managed_job_id": "22222222-2222-4222-8222-222222222222",
+      "agent_job_id": "11111111-1111-4111-8111-111111111111",
+      "attempt": 1,
+      "policy_id": "opus-5-5-xhigh-v1",
+      "runner_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  "steering": {
+    "event_id": "33333333-3333-4333-8333-333333333333",
+    "event_key": "operator:steer:managed-wake-example",
+    "sequence_no": 2,
+    "message": "CTX_PI_WAKE:11111111-1111-4111-8111-111111111111:1:2"
+  },
+  "callback": {
+    "events_url": "https://ctx.example/app/api/work/runs/11111111-1111-4111-8111-111111111111/events",
+    "heartbeat_url": "https://ctx.example/app/api/work/runs/11111111-1111-4111-8111-111111111111/heartbeat",
+    "verifier_receipts_url": "https://ctx.example/app/api/work/runs/11111111-1111-4111-8111-111111111111/verifier-receipts",
+    "token": "fixture-only"
+  }
+}
