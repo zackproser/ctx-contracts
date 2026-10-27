@@ -4,6 +4,54 @@
 // CI (`npm run schemas` must be a no-op). Cross-field refinements (superRefine)
 // live only here — JSON Schema is the structural subset.
 import { z } from 'zod';
+
+// Managed builds are admitted before inference. Their runtime is private;
+// Grok and other owner clients use this same provider-independent contract.
+export const SubmitManagedJobInputSchema = z.object({
+  idempotency_key: z.string().min(8).max(96).regex(/^[A-Za-z0-9._:-]+$/),
+  title: z.string().trim().min(1).max(300),
+  prompt: z.string().min(1).max(30000),
+  budget_usd: z.number().min(0.10).max(100).default(5),
+  deadline_minutes: z.number().int().min(5).max(120).default(60),
+  max_build_attempts: z.number().int().min(1).max(4).default(3),
+  recipe: z.literal('cloudflare-worker').default('cloudflare-worker'),
+}).strict();
+
+export const ManagedJobControlInputSchema = z.object({
+  job_id: z.string().uuid(),
+  idempotency_key: z.string().min(8).max(96).regex(/^[A-Za-z0-9._:-]+$/),
+  operation: z.enum(['cancel', 'steer', 'acknowledge']),
+  message: z.string().min(1).max(8000).optional(),
+  event_id: z.string().optional(),
+}).strict();
+
+export const ManagedJobSchema = z.object({
+  contract: z.literal('ctx.managed-job.v1'),
+  job_id: z.string().uuid(),
+  task_item_id: z.string().uuid(),
+  title: z.string(),
+  state: z.enum(['admitting', 'running', 'building', 'verifying', 'completed', 'needs_input', 'cancelled', 'failed']),
+  status_url: z.string().url(),
+  accepted_at: z.string(),
+  deadline_at: z.string(),
+  last_contact_at: z.string().nullable(),
+  last_progress_at: z.string().nullable(),
+  last_checkpoint_at: z.string().nullable(),
+  usage: z.object({
+    input_tokens: z.number().nonnegative(), output_tokens: z.number().nonnegative(),
+    cache_read_tokens: z.number().nonnegative(), requests: z.number().int().nonnegative(),
+    priced_usd: z.number().nonnegative(), reserved_usd: z.number().nonnegative(),
+    budget_usd: z.number().positive(), pricing_version: z.string(),
+    billing_status: z.literal('priced_usage_not_invoice'),
+    compute_usd: z.number().nonnegative().nullable(),
+    interface_usage: z.literal('unavailable'),
+  }),
+  recent_events: z.array(z.object({ id: z.string(), at: z.string(), kind: z.string(), summary: z.string() })),
+  build: z.record(z.unknown()).nullable(),
+  deployment: z.record(z.unknown()).nullable(),
+  notification: z.object({ configured: z.boolean(), pending: z.number().int().nonnegative() }),
+  error: z.string().nullable(),
+});
 import {
   CARDINALITY_MODES, CHECK_KINDS, COMPLETION_GRAPH_STATES, COMPLETION_NODE_KINDS, COMPLETION_POLICIES,
   COMPLETION_STATUSES, DELIVERABLE_KINDS, DRAFT_FALLBACK_REASONS, DRAFT_GENERATORS, DRAFT_RECEIPT_VERIFIER_IDS,

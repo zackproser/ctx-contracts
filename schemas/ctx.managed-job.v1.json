@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.managed-job.v1.json",
+  "title": "ctx.managed-job.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.managed-job.v1"
+    },
+    "job_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "task_item_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "admitting",
+        "running",
+        "building",
+        "verifying",
+        "completed",
+        "needs_input",
+        "cancelled",
+        "failed"
+      ]
+    },
+    "status_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "accepted_at": {
+      "type": "string"
+    },
+    "deadline_at": {
+      "type": "string"
+    },
+    "last_contact_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_progress_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_checkpoint_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "input_tokens": {
+          "type": "number",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cache_read_tokens": {
+          "type": "number",
+          "minimum": 0
+        },
+        "requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "priced_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reserved_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "budget_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "pricing_version": {
+          "type": "string"
+        },
+        "billing_status": {
+          "type": "string",
+          "const": "priced_usage_not_invoice"
+        },
+        "compute_usd": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "interface_usage": {
+          "type": "string",
+          "const": "unavailable"
+        }
+      },
+      "required": [
+        "input_tokens",
+        "output_tokens",
+        "cache_read_tokens",
+        "requests",
+        "priced_usd",
+        "reserved_usd",
+        "budget_usd",
+        "pricing_version",
+        "billing_status",
+        "compute_usd",
+        "interface_usage"
+      ],
+      "additionalProperties": true
+    },
+    "recent_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "kind",
+          "summary"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "build": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "deployment": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "notification": {
+      "type": "object",
+      "properties": {
+        "configured": {
+          "type": "boolean"
+        },
+        "pending": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "configured",
+        "pending"
+      ],
+      "additionalProperties": true
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "job_id",
+    "task_item_id",
+    "title",
+    "state",
+    "status_url",
+    "accepted_at",
+    "deadline_at",
+    "last_contact_at",
+    "last_progress_at",
+    "last_checkpoint_at",
+    "usage",
+    "recent_events",
+    "build",
+    "deployment",
+    "notification",
+    "error"
+  ],
+  "additionalProperties": true
+}
