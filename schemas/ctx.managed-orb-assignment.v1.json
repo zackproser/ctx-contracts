@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.managed-orb-assignment.v1.json",
+  "title": "ctx.managed-orb-assignment.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.managed-orb-assignment.v1"
+    },
+    "managed_job_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "agent_job_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "attempt": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "runner_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    }
+  },
+  "required": [
+    "contract",
+    "managed_job_id",
+    "agent_job_id",
+    "attempt",
+    "policy_id",
+    "runner_commit"
+  ],
+  "additionalProperties": false
+}
