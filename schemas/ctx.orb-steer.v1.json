@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.orb-steer.v1.json",
+  "title": "ctx.orb-steer.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.orb-steer.v1"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "job": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "node_item_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attempt": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "provider_thread_id": {
+          "type": "string",
+          "pattern": "^T-[a-f0-9-]+$"
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "type": "string",
+              "const": "ctx.managed-orb-assignment.v1"
+            },
+            "managed_job_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "agent_job_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "attempt": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "runner_commit": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            }
+          },
+          "required": [
+            "contract",
+            "managed_job_id",
+            "agent_job_id",
+            "attempt",
+            "policy_id",
+            "runner_commit"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "node_item_id",
+        "attempt",
+        "provider_thread_id"
+      ],
+      "additionalProperties": false
+    },
+    "steering": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence_no": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "event_id",
+        "event_key",
+        "sequence_no",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "callback": {
+      "type": "object",
+      "properties": {
+        "events_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "heartbeat_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "verifier_receipts_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "events_url",
+        "heartbeat_url",
+        "verifier_receipts_url",
+        "token"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract",
+    "idempotency_key",
+    "issued_at",
+    "job",
+    "steering",
+    "callback"
+  ],
+  "additionalProperties": false
+}

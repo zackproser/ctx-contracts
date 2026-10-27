@@ -45,7 +45,7 @@ describe('managed Orb runtime contracts', () => {
   it('accepts compiled module bytes while rejecting traversal and receipt forgery', () => {
     const candidate = { source_tree_sha: sha, main: 'worker.mjs', modules: [{ name: 'worker.mjs', type: 'esm', content_base64: 'ZXhwb3J0IHt9' }], logs: { build: 'passed', test: 'passed' }, diff_stat: '1 file changed' };
     expect(ManagedRunnerCandidateSchema.parse(candidate).main).toBe('worker.mjs');
-    for (const name of ['../worker.mjs', '/worker.mjs', 'nested/../worker.mjs', '__ctx-entry.mjs']) {
+    for (const name of ['../worker.mjs', '/worker.mjs', 'nested/../worker.mjs', 'a//b.mjs', './worker.mjs', 'nested/./worker.mjs', '__ctx-entry.mjs']) {
       expect(() => ManagedRunnerCandidateSchema.parse({ ...candidate, main: name })).toThrow();
     }
     expect(() => ManagedRunnerCandidateSchema.parse({ ...candidate, passed: true })).toThrow();
@@ -74,4 +74,15 @@ it('tolerates additive server lease fields without relaxing client lease request
   const lease={runner_epoch:1,managed_job_id:'10000000-0000-4000-8000-000000000001',policy_id:'opus-5-5-xhigh-v1',deadline_at:new Date().toISOString(),budget_usd:5,generation:0,prompt:'Build',acceptance:null,latest_steering:null,checkpoint:null,future_server_observation:'retained'};
   expect(ManagedRunnerLeaseSchema.parse(lease).future_server_observation).toBe('retained');
   expect(()=>ManagedRunnerLeaseInputSchema.parse({instance_id:lease.managed_job_id,runner_epoch:1})).toThrow();
+});
+
+it('preserves native runtime on a recovered signed wake and validates candidate state', async () => {
+  const {OrbSteeringEnvelopeSchema,ManagedRunnerHeartbeatSchema,ManagedRunnerCandidateResultSchema}=await import('../src/managed-runner.js');
+  const wake=JSON.parse(readFileSync(new URL('../fixtures/ctx.orb-steer.v1.json',import.meta.url),'utf8'));
+  expect(OrbSteeringEnvelopeSchema.parse(wake).job.runtime?.policy_id).toBe('opus-5-5-xhigh-v1');
+  expect(()=>OrbSteeringEnvelopeSchema.parse({...wake,job:{...wake.job,runtime:{...wake.job.runtime,runner_commit:'main'}}})).toThrow();
+  const candidate={operation_id:'candidate:1',candidate_sha256:sha,source_tree_sha:sha,status:'failed'};
+  expect(ManagedRunnerHeartbeatSchema.parse({state:'running',generation:1,stop:false,inbox:[],candidate}).candidate?.status).toBe('failed');
+  expect(ManagedRunnerCandidateResultSchema.parse({rejected:true,code:'attempts_exhausted',reason:'Original allowance exhausted'})).toHaveProperty('code','attempts_exhausted');
+  expect(()=>ManagedRunnerCandidateResultSchema.parse({rejected:true,code:'guess',reason:'No'})).toThrow();
 });

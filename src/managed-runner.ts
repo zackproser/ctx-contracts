@@ -7,7 +7,7 @@ const Sha = z.string().regex(/^[a-f0-9]{64}$/);
 const Id = z.string().uuid();
 const Epoch = z.number().int().positive();
 const Generation = z.number().int().nonnegative();
-const RelativePath = z.string().min(1).max(240).regex(/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))(?!__ctx)[A-Za-z0-9_.@+/-]+$/);
+const RelativePath = z.string().min(1).max(240).regex(/^(?!\/)(?!.*\/\/)(?!.*(?:^|\/)\.{1,2}(?:\/|$))(?!__ctx)[A-Za-z0-9_.@+/-]+$/);
 
 export const ManagedOrbAssignmentSchema = z.object({
   contract: z.literal('ctx.managed-orb-assignment.v1'),
@@ -17,6 +17,35 @@ export const ManagedOrbAssignmentSchema = z.object({
   policy_id: z.string().min(1).max(120),
   runner_commit: z.string().regex(/^[a-f0-9]{40}$/),
 }).strict();
+
+// A management bridge may recover after losing its local dispatch entry. The
+// signed wake must retain the admitted runtime so recovery never starts a
+// different coding harness or an unmetered provider turn.
+export const OrbSteeringEnvelopeSchema = z.object({
+  contract: z.literal('ctx.orb-steer.v1'), idempotency_key: z.string().min(1),
+  issued_at: z.string().datetime(),
+  job: z.object({
+    id: Id, node_item_id: Id.nullable(), attempt: Epoch,
+    provider_thread_id: z.string().regex(/^T-[a-f0-9-]+$/),
+    runtime: ManagedOrbAssignmentSchema.optional(),
+  }).strict(),
+  steering: z.object({ event_id: Id, event_key: z.string().min(1),
+    sequence_no: Generation, message: z.string().min(1), }).strict(),
+  callback: z.object({ events_url: z.string().url(), heartbeat_url: z.string().url(),
+    verifier_receipts_url: z.string().url(), token: z.string().min(1), }).strict(),
+}).strict();
+
+export const ManagedRunnerCandidateStatusSchema = z.object({
+  operation_id: z.string().min(1).max(240), candidate_sha256: Sha,
+  source_tree_sha: Sha, status: z.enum(['pending', 'failed', 'passed']),
+}).strict();
+export const ManagedRunnerCandidateResultSchema = z.union([
+  z.object({ operation_id: z.string().min(1).max(240), attempt: Epoch,
+    candidate_sha256: Sha }).strict(),
+  z.object({ rejected: z.literal(true), reason: z.string().min(1).max(8000),
+    code: z.enum(['candidate_failed', 'compiled_unchanged', 'attempts_exhausted', 'input_pending']),
+  }).strict(),
+]);
 
 export const ManagedRunnerLeaseInputSchema = z.object({ instance_id: Id }).strict();
 export const ManagedRunnerCheckpointPointerSchema = z.object({
@@ -37,6 +66,7 @@ export const ManagedRunnerLeaseSchema = z.object({
   latest_steering: z.string().nullable(), checkpoint: ManagedRunnerCheckpointPointerSchema.nullable(),
   runner_commit: z.string().regex(/^[a-f0-9]{40}$/).optional(),
   design_references: z.array(ManagedRunnerDesignReferenceSchema).max(5).optional(),
+  candidate: ManagedRunnerCandidateStatusSchema.nullable().optional(),
 }).passthrough();
 export const ManagedRunnerInboxItemSchema = z.object({
   id: z.string().min(1).max(160), kind: z.enum(['steer', 'repair', 'cancel']),
@@ -51,6 +81,7 @@ export const ManagedRunnerHeartbeatInputSchema = z.object({
 export const ManagedRunnerHeartbeatSchema = z.object({
   state: z.string().min(1), generation: Generation, stop: z.boolean(),
   inbox: z.array(ManagedRunnerInboxItemSchema).max(100),
+  candidate: ManagedRunnerCandidateStatusSchema.nullable().optional(),
 }).passthrough();
 export const ManagedRunnerCheckpointManifestSchema = z.object({
   git_sha256: Sha, session_sha256: Sha, source_tree_sha: Sha,
@@ -76,5 +107,8 @@ export type ManagedRunnerLease = z.infer<typeof ManagedRunnerLeaseSchema>;
 export type ManagedRunnerInboxItem = z.infer<typeof ManagedRunnerInboxItemSchema>;
 export type ManagedRunnerHeartbeat = z.infer<typeof ManagedRunnerHeartbeatSchema>;
 export type ManagedRunnerCandidate = z.infer<typeof ManagedRunnerCandidateSchema>;
+export type OrbSteeringEnvelope = z.infer<typeof OrbSteeringEnvelopeSchema>;
+export type ManagedRunnerCandidateStatus = z.infer<typeof ManagedRunnerCandidateStatusSchema>;
+export type ManagedRunnerCandidateResult = z.infer<typeof ManagedRunnerCandidateResultSchema>;
 
 export type ManagedRunnerDesignReference = z.infer<typeof ManagedRunnerDesignReferenceSchema>;
