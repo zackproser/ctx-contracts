@@ -56,3 +56,22 @@ describe('managed Orb runtime contracts', () => {
     expect(() => ManagedOrbAssignmentSchema.parse({ ...assignment, runner_commit: 'main' })).toThrow();
   });
 });
+
+it('accepts bounded retained design evidence on a lease and rejects an oversized reference', () => {
+  const ref={artifact_id:'10000000-0000-4000-8000-000000000001',source_sha256:'a'.repeat(64),media_type:'image/jpeg',content_base64:'AA=='};
+  const lease={runner_epoch:1,managed_job_id:ref.artifact_id,policy_id:'opus-5-5-xhigh-v1',deadline_at:new Date().toISOString(),budget_usd:5,generation:0,prompt:'Build',acceptance:null,latest_steering:null,checkpoint:null,design_references:[ref]};
+  expect(ManagedRunnerLeaseSchema.parse(lease).design_references?.[0]?.source_sha256).toBe(ref.source_sha256);
+  expect(()=>ManagedRunnerLeaseSchema.parse({...lease,design_references:[{...ref,content_base64:'A'.repeat(60004)}]})).toThrow();
+  expect(()=>ManagedRunnerLeaseSchema.parse({...lease,design_references:Array(6).fill(ref)})).toThrow();
+});
+it('allows an explicit same-page reload in frozen acceptance without granting arbitrary navigation', () => {
+  const input={idempotency_key:'managed-reload-proof',title:'Reload persistence',prompt:'Keep progress after reload',acceptance:{steps:[{action:'reload'},{action:'assert',locator:{by:'css',css:'body'},check:'visible'}]}};
+  expect(SubmitManagedJobInputSchema.parse(input).acceptance?.steps[0]?.action).toBe('reload');
+  expect(()=>SubmitManagedJobInputSchema.parse({...input,acceptance:{steps:[{action:'reload',url:'https://other.example'},{action:'assert',locator:{by:'css',css:'body'},check:'visible'}]}})).toThrow();
+});
+
+it('tolerates additive server lease fields without relaxing client lease requests', () => {
+  const lease={runner_epoch:1,managed_job_id:'10000000-0000-4000-8000-000000000001',policy_id:'opus-5-5-xhigh-v1',deadline_at:new Date().toISOString(),budget_usd:5,generation:0,prompt:'Build',acceptance:null,latest_steering:null,checkpoint:null,future_server_observation:'retained'};
+  expect(ManagedRunnerLeaseSchema.parse(lease).future_server_observation).toBe('retained');
+  expect(()=>ManagedRunnerLeaseInputSchema.parse({instance_id:lease.managed_job_id,runner_epoch:1})).toThrow();
+});

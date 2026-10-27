@@ -22,6 +22,13 @@ export const ManagedRunnerLeaseInputSchema = z.object({ instance_id: Id }).stric
 export const ManagedRunnerCheckpointPointerSchema = z.object({
   git_sha256: Sha, session_sha256: Sha, checkpoint_sha256: Sha.optional(),
 }).strict();
+// Five retained design references plus two review screenshots fit a 512KB request.
+export const MANAGED_DESIGN_IMAGE_MAX_BASE64 = 60_000;
+export const ManagedRunnerDesignReferenceSchema = z.object({
+  artifact_id: Id, source_sha256: Sha, media_type: z.literal('image/jpeg'),
+  content_base64: z.string().min(4).max(MANAGED_DESIGN_IMAGE_MAX_BASE64)
+    .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/),
+}).strict();
 export const ManagedRunnerLeaseSchema = z.object({
   runner_epoch: Epoch, managed_job_id: Id,
   policy_id: z.string().min(1), deadline_at: z.string().datetime(),
@@ -29,7 +36,8 @@ export const ManagedRunnerLeaseSchema = z.object({
   prompt: z.string(), acceptance: ManagedBrowserAcceptanceSchema.nullable(),
   latest_steering: z.string().nullable(), checkpoint: ManagedRunnerCheckpointPointerSchema.nullable(),
   runner_commit: z.string().regex(/^[a-f0-9]{40}$/).optional(),
-}).strict();
+  design_references: z.array(ManagedRunnerDesignReferenceSchema).max(5).optional(),
+}).passthrough();
 export const ManagedRunnerInboxItemSchema = z.object({
   id: z.string().min(1).max(160), kind: z.enum(['steer', 'repair', 'cancel']),
   operation_id: z.string().min(1).max(160), message: z.string().max(32000),
@@ -43,7 +51,7 @@ export const ManagedRunnerHeartbeatInputSchema = z.object({
 export const ManagedRunnerHeartbeatSchema = z.object({
   state: z.string().min(1), generation: Generation, stop: z.boolean(),
   inbox: z.array(ManagedRunnerInboxItemSchema).max(100),
-}).strict();
+}).passthrough();
 export const ManagedRunnerCheckpointManifestSchema = z.object({
   git_sha256: Sha, session_sha256: Sha, source_tree_sha: Sha,
   inbox_ids: z.array(z.string().min(1).max(160)).max(100),
@@ -68,3 +76,5 @@ export type ManagedRunnerLease = z.infer<typeof ManagedRunnerLeaseSchema>;
 export type ManagedRunnerInboxItem = z.infer<typeof ManagedRunnerInboxItemSchema>;
 export type ManagedRunnerHeartbeat = z.infer<typeof ManagedRunnerHeartbeatSchema>;
 export type ManagedRunnerCandidate = z.infer<typeof ManagedRunnerCandidateSchema>;
+
+export type ManagedRunnerDesignReference = z.infer<typeof ManagedRunnerDesignReferenceSchema>;
