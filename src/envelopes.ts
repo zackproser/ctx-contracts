@@ -15,6 +15,29 @@ export const ManagedJobControlInputSchema = z.object({
   event_id: z.string().optional(),
 }).strict();
 
+export const ManagedRuntimeSchema = z.object({
+  coder: z.object({
+    harness: z.literal('pi-durable@1.4.0'),
+    host: z.enum(['amp-orb', 'cloudflare-do']),
+    model: z.string().min(1),
+    effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max']),
+    policy_id: z.string().min(1),
+  }).strict(),
+  bootstrap: z.object({
+    mechanism: z.enum(['amp-agent-start-hook', 'amp-bootstrap-turn']),
+    inference_requests: z.number().int().nonnegative().nullable(),
+  }).strict(),
+}).strict();
+export const ManagedGateSchema = z.object({
+  status: z.enum(['pending', 'passed', 'failed', 'not_required']),
+  receipt_id: z.string().uuid().nullable(),
+}).strict();
+export const ManagedHealthSchema = z.object({
+  status: z.enum(['healthy', 'degraded', 'unknown']),
+  checked_at: z.string().datetime().nullable(),
+  receipt_ids: z.array(z.string().uuid()),
+}).strict();
+
 export const ManagedJobSchema = z.object({
   contract: z.literal('ctx.managed-job.v1'),
   job_id: z.string().uuid(),
@@ -35,12 +58,24 @@ export const ManagedJobSchema = z.object({
     billing_status: z.literal('priced_usage_not_invoice'),
     compute_usd: z.number().nonnegative().nullable(),
     interface_usage: z.literal('unavailable'),
+    model_policy: z.string().min(1).optional(),
+    cache_write_tokens: z.number().int().nonnegative().optional(),
+    unknown_reserved_usd: z.number().nonnegative().optional(),
+    orb: z.object({
+      amp_usd: z.number().nonnegative().nullable(),
+      runtime_seconds: z.number().nonnegative().nullable(),
+      source: z.enum(['amp-cli', 'unavailable']),
+      observed_at: z.string().datetime().nullable().optional(),
+    }).strict().optional(),
   }),
   recent_events: z.array(z.object({ id: z.string(), at: z.string(), kind: z.string(), summary: z.string() })),
   build: z.record(z.unknown()).nullable(),
   deployment: z.record(z.unknown()).nullable(),
   notification: z.object({ configured: z.boolean(), pending: z.number().int().nonnegative() }),
   error: z.string().nullable(),
+  runtime: ManagedRuntimeSchema.nullable().optional(),
+  gates: z.object({ functional: ManagedGateSchema, deployment: ManagedGateSchema, visual: ManagedGateSchema }).strict().optional(),
+  health: ManagedHealthSchema.optional(),
 });
 import {
   CARDINALITY_MODES, CHECK_KINDS, COMPLETION_GRAPH_STATES, COMPLETION_NODE_KINDS, COMPLETION_POLICIES,
@@ -122,6 +157,10 @@ export const SubmitManagedJobInputSchema = z.object({
   deadline_minutes: z.number().int().min(5).max(120).default(60),
   max_build_attempts: z.number().int().min(1).max(8).default(6),
   acceptance: ManagedBrowserAcceptanceSchema.optional(),
+  visual_acceptance: z.object({
+    criteria: z.array(z.string().trim().min(1).max(1000)).min(1).max(20),
+    reference_artifact_ids: z.array(z.string().uuid()).max(5).default([]),
+  }).strict().optional(),
   recipe: z.literal('cloudflare-worker').default('cloudflare-worker'),
 }).strict();
 

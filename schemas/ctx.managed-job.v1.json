@@ -112,6 +112,69 @@
         "interface_usage": {
           "type": "string",
           "const": "unavailable"
+        },
+        "model_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cache_write_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown_reserved_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "orb": {
+          "type": "object",
+          "properties": {
+            "amp_usd": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runtime_seconds": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "amp-cli",
+                "unavailable"
+              ]
+            },
+            "observed_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "amp_usd",
+            "runtime_seconds",
+            "source"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -200,6 +263,231 @@
         "string",
         "null"
       ]
+    },
+    "runtime": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "coder": {
+              "type": "object",
+              "properties": {
+                "harness": {
+                  "type": "string",
+                  "const": "pi-durable@1.4.0"
+                },
+                "host": {
+                  "type": "string",
+                  "enum": [
+                    "amp-orb",
+                    "cloudflare-do"
+                  ]
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "effort": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                "policy_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "harness",
+                "host",
+                "model",
+                "effort",
+                "policy_id"
+              ],
+              "additionalProperties": false
+            },
+            "bootstrap": {
+              "type": "object",
+              "properties": {
+                "mechanism": {
+                  "type": "string",
+                  "enum": [
+                    "amp-agent-start-hook",
+                    "amp-bootstrap-turn"
+                  ]
+                },
+                "inference_requests": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "mechanism",
+                "inference_requests"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "coder",
+            "bootstrap"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gates": {
+      "type": "object",
+      "properties": {
+        "functional": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "passed",
+                "failed",
+                "not_required"
+              ]
+            },
+            "receipt_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "receipt_id"
+          ],
+          "additionalProperties": false
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "passed",
+                "failed",
+                "not_required"
+              ]
+            },
+            "receipt_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "receipt_id"
+          ],
+          "additionalProperties": false
+        },
+        "visual": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "passed",
+                "failed",
+                "not_required"
+              ]
+            },
+            "receipt_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "receipt_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "functional",
+        "deployment",
+        "visual"
+      ],
+      "additionalProperties": false
+    },
+    "health": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "healthy",
+            "degraded",
+            "unknown"
+          ]
+        },
+        "checked_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "required": [
+        "status",
+        "checked_at",
+        "receipt_ids"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

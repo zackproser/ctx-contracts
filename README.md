@@ -103,6 +103,10 @@ The read input accepts only a task UUID. The result contains at most 40 nodes, w
 
 ### Managed build acceptance (2026-10-27)
 
+Managed jobs also accept optional frozen `visual_acceptance` criteria and retained reference-artifact IDs. Optional runtime, separate Orb usage, gate receipts and current health fields preserve legacy snapshots and distinguish a historical pass from a later regression. Unknown reservations represent exposure, not an invoice. The default model budget remains $5.
+
+`ctx.managed-orb-assignment.v1` pins the private managed job, agent job, attempt, model policy and immutable runner commit. Exported managed-runner request schemas describe lease acquisition, progress, checkpoints and candidate modules. Authentication, runner epochs and trusted release authority are derived by CTX; callers cannot supply successful verifier receipts in those requests.
+
 `SubmitManagedJobInputSchema` defaults to six source-build attempts and accepts an explicit limit of 1–8. Existing explicit limits are preserved. Optional `acceptance.steps` reuses the browser journey `click`, `fill`, `press`, `waitFor` and `assert` vocabulary, with at least one typed assertion, at most 80 steps / 16KB, and a 5-second per-step timeout ceiling. The trusted managed runner owns target navigation and desktop/phone fixtures; clients cannot supply arbitrary URLs or JavaScript in acceptance steps. The admitted owner criteria are separate from agent-authored workspace tests.
 
 ### JSON Schema

@@ -1,6 +1,7 @@
 // Contract literal → schema. One place to look an envelope up by its
 // `contract` field; the JSON Schema generator iterates this map.
 import type { z } from 'zod';
+import { ManagedOrbAssignmentSchema } from './managed-runner.js';
 import {
   ManagedJobSchema, ExternalPacketSchema, ExternalFormPlanSchema, ExternalFormEvidenceSchema, ExternalFormStepSchema,
   AppHealthSchema, BrowserEvidence, DeploymentEvidence, HealthSchema, ObligationIRSchema, TodoHandleSchema,
@@ -10,6 +11,7 @@ import {
 
 export const ENVELOPES = {
   'ctx.managed-job.v1': ManagedJobSchema,
+  'ctx.managed-orb-assignment.v1': ManagedOrbAssignmentSchema,
   'ctx.external-packet.v1': ExternalPacketSchema,
   'ctx.external-form-plan.v1': ExternalFormPlanSchema,
   'ctx.external-form-evidence.v1': ExternalFormEvidenceSchema,

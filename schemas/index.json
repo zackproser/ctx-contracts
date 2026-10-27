@@ -1,6 +1,7 @@
 {
   "contracts": [
     "ctx.managed-job.v1",
+    "ctx.managed-orb-assignment.v1",
     "ctx.external-packet.v1",
     "ctx.external-form-plan.v1",
     "ctx.external-form-evidence.v1",
