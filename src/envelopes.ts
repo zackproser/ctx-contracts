@@ -121,6 +121,7 @@ export const JourneyStepSchema = z.discriminatedUnion('action', [
   }),
   z.object({ action: z.literal('screenshot'), name: NonEmpty.regex(/^[a-zA-Z0-9._-]+$/) }),
   z.object({ action: z.literal('http'), url: z.string().url(), status: z.number().int().min(100).max(599), timeoutMs: Timeout }),
+  z.object({ action: z.literal('reload'), timeoutMs: Timeout }),
 ]);
 
 // Managed acceptance reuses the browser-journey locator/action vocabulary.
@@ -131,6 +132,7 @@ const ManagedAcceptanceStepSchema = z.discriminatedUnion('action', [
   JourneyStepSchema.options[3].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
   JourneyStepSchema.options[4].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
   JourneyStepSchema.options[5].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
+  JourneyStepSchema.options[8].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
 ]);
 export const ManagedBrowserAcceptanceSchema = z.object({
   steps: z.array(ManagedAcceptanceStepSchema).min(1).max(80),

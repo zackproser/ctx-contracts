@@ -924,6 +924,24 @@
               "status"
             ],
             "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "reload"
+              },
+              "timeoutMs": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 120000
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": true
           }
         ]
       },
