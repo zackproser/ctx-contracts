@@ -7,16 +7,6 @@ import { z } from 'zod';
 
 // Managed builds are admitted before inference. Their runtime is private;
 // Grok and other owner clients use this same provider-independent contract.
-export const SubmitManagedJobInputSchema = z.object({
-  idempotency_key: z.string().min(8).max(96).regex(/^[A-Za-z0-9._:-]+$/),
-  title: z.string().trim().min(1).max(300),
-  prompt: z.string().min(1).max(30000),
-  budget_usd: z.number().min(0.10).max(100).default(5),
-  deadline_minutes: z.number().int().min(5).max(120).default(60),
-  max_build_attempts: z.number().int().min(1).max(4).default(3),
-  recipe: z.literal('cloudflare-worker').default('cloudflare-worker'),
-}).strict();
-
 export const ManagedJobControlInputSchema = z.object({
   job_id: z.string().uuid(),
   idempotency_key: z.string().min(8).max(96).regex(/^[A-Za-z0-9._:-]+$/),
@@ -97,6 +87,43 @@ export const JourneyStepSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('screenshot'), name: NonEmpty.regex(/^[a-zA-Z0-9._-]+$/) }),
   z.object({ action: z.literal('http'), url: z.string().url(), status: z.number().int().min(100).max(599), timeoutMs: Timeout }),
 ]);
+
+// Managed acceptance reuses the browser-journey locator/action vocabulary.
+// Navigation, HTTP URLs and screenshots are runner-owned for managed builds.
+const ManagedAcceptanceStepSchema = z.discriminatedUnion('action', [
+  JourneyStepSchema.options[1].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
+  JourneyStepSchema.options[2].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
+  JourneyStepSchema.options[3].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
+  JourneyStepSchema.options[4].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
+  JourneyStepSchema.options[5].extend({ timeoutMs: z.number().int().min(100).max(5000).optional() }).strict(),
+]);
+export const ManagedBrowserAcceptanceSchema = z.object({
+  steps: z.array(ManagedAcceptanceStepSchema).min(1).max(80),
+}).strict().superRefine((acceptance, ctx) => {
+  if (!acceptance.steps.some(step => step.action === 'assert'))
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['steps'], message: 'at least one observable assertion is required' });
+  if (new TextEncoder().encode(JSON.stringify(acceptance)).length > 16000)
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'acceptance must be at most 16KB' });
+  for (const [index, step] of acceptance.steps.entries()) {
+    if (step.action === 'assert' && !['visible', 'hidden'].includes(step.check) && step.expected === undefined)
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['steps', index, 'expected'], message: 'assertion requires expected value' });
+    if (step.action === 'assert' && step.check === 'count' && (typeof step.expected !== 'number' || !Number.isInteger(step.expected) || step.expected < 0))
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['steps', index, 'expected'], message: 'count requires a nonnegative integer' });
+    if (step.action === 'assert' && !['visible', 'hidden', 'count'].includes(step.check) && typeof step.expected !== 'string')
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['steps', index, 'expected'], message: 'text/value assertion requires a string' });
+  }
+});
+
+export const SubmitManagedJobInputSchema = z.object({
+  idempotency_key: z.string().min(8).max(96).regex(/^[A-Za-z0-9._:-]+$/),
+  title: z.string().trim().min(1).max(300),
+  prompt: z.string().min(1).max(30000),
+  budget_usd: z.number().min(0.10).max(100).default(5),
+  deadline_minutes: z.number().int().min(5).max(120).default(60),
+  max_build_attempts: z.number().int().min(1).max(8).default(6),
+  acceptance: ManagedBrowserAcceptanceSchema.optional(),
+  recipe: z.literal('cloudflare-worker').default('cloudflare-worker'),
+}).strict();
 
 export const FixtureSchema = z.object({
   name: NonEmpty.regex(/^[a-zA-Z0-9._-]+$/),
