@@ -101,6 +101,10 @@ The read input accepts only a task UUID. The result contains at most 40 nodes, w
 
 `action` and `next_tool` are advisory. A snapshot grants no claim, execution permission, lease renewal, or verification authority. Read current instructions and use the applicable claim/checkpoint protocol before executing work. Lease and deadline timestamps are observations, not credentials. The suggested tool can only be `get_work_instructions`, `inspect_work_run`, `inspect_work_state`, or `evaluate_work_gate`, with its corresponding strict UUID arguments; it may also be null. A stale evaluation or a later graph change requires a fresh read or evaluation through the supported tools.
 
+### Managed build acceptance (2026-10-27)
+
+`SubmitManagedJobInputSchema` defaults to six source-build attempts and accepts an explicit limit of 1–8. Existing explicit limits are preserved. Optional `acceptance.steps` reuses the browser journey `click`, `fill`, `press`, `waitFor` and `assert` vocabulary, with at least one typed assertion, at most 80 steps / 16KB, and a 5-second per-step timeout ceiling. The trusted managed runner owns target navigation and desktop/phone fixtures; clients cannot supply arbitrary URLs or JavaScript in acceptance steps. The admitted owner criteria are separate from agent-authored workspace tests.
+
 ### JSON Schema
 
 ```ts
