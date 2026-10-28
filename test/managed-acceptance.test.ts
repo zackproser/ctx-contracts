@@ -42,8 +42,8 @@ describe('managed output accounting', () => {
   const usage = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, requests: 0, priced_usd: 0, reserved_usd: 0, budget_usd: 5,
     pricing_version: 'p', billing_status: 'priced_usage_not_invoice', compute_usd: null, interface_usage: 'unavailable' };
   it('keeps open, uncertain and no-output spend through a parse', () => {
-    const parsed = ManagedJobSchema.parse({ ...base, usage: { ...usage, reserved_usd: 0.9, unknown_reserved_usd: 0.4, open_reserved_usd: 0.5, exposure_usd: 1.2, no_output_usd: 0.33, no_output_turns: 1, consecutive_no_output_turns: 1 } });
-    expect(parsed.usage).toMatchObject({ open_reserved_usd: 0.5, exposure_usd: 1.2, no_output_usd: 0.33, no_output_turns: 1, consecutive_no_output_turns: 1 });
+    const parsed = ManagedJobSchema.parse({ ...base, usage: { ...usage, priced_usd: 0.33, reserved_usd: 0.9, unknown_reserved_usd: 0.4, open_reserved_usd: 0.5, exposure_usd: 1.23, no_output_usd: 0.33, no_output_turns: 1, consecutive_no_output_turns: 1 } });
+    expect(parsed.usage).toMatchObject({ open_reserved_usd: 0.5, exposure_usd: 1.23, no_output_usd: 0.33, no_output_turns: 1, consecutive_no_output_turns: 1 });
   });
   it('accepts older snapshots without the fields and rejects negative or fractional counts', () => {
     expect(ManagedJobSchema.parse({ ...base, usage }).usage.no_output_usd).toBeUndefined();
