@@ -188,3 +188,7 @@ Managed browser acceptance can declare an explicit same-page `reload` between ac
 ### Managed output accounting (2026-10-28)
 
 Managed job usage may report `open_reserved_usd` (in-flight reservations), `exposure_usd` (priced plus open plus uncertain reservations), `no_output_usd` (priced spend on model responses that used their whole output allowance without visible text or a usable tool call), `no_output_turns` and `consecutive_no_output_turns`. All are optional and additive; older snapshots remain valid. Held and uncertain amounts are exposure, not an invoice.
+
+### Cloudflare-hosted managed runner (2026-10-28)
+
+`ManagedRuntimeSchema` accepts `bootstrap.mechanism: "cloudflare-do-alarm"` with `coder.host: "cloudflare-do"`: the native Pi runner runs inside the job's own Durable Object and is woken by its alarm, so no bootstrap inference occurs. Additive; existing values are unchanged.

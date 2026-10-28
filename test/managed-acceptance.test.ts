@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ManagedBrowserAcceptanceSchema, ManagedJobSchema, SubmitManagedJobInputSchema } from '../src/envelopes.js';
+import { ManagedBrowserAcceptanceSchema, ManagedJobSchema, ManagedRuntimeSchema, SubmitManagedJobInputSchema } from '../src/envelopes.js';
 
 const request = { idempotency_key: 'managed-retry-test', title: 'A game', prompt: 'Build a game' };
 const assertion = { action: 'assert', locator: { by: 'testId', testId: 'score' }, check: 'textEquals', expected: '0' };
@@ -49,5 +49,15 @@ describe('managed output accounting', () => {
     expect(ManagedJobSchema.parse({ ...base, usage }).usage.no_output_usd).toBeUndefined();
     expect(() => ManagedJobSchema.parse({ ...base, usage: { ...usage, no_output_usd: -1 } })).toThrow();
     expect(() => ManagedJobSchema.parse({ ...base, usage: { ...usage, no_output_turns: 1.5 } })).toThrow();
+  });
+});
+
+describe('managed runtime hosts', () => {
+  const coder = { harness: 'pi-durable@1.4.0', host: 'cloudflare-do', model: 'claude-opus-5-5', effort: 'xhigh', policy_id: 'opus-5-5-xhigh-v2' };
+  it('accepts the Cloudflare Durable Object host and its alarm bootstrap', () => {
+    expect(ManagedRuntimeSchema.parse({ coder, bootstrap: { mechanism: 'cloudflare-do-alarm', inference_requests: 0 } }).bootstrap.mechanism).toBe('cloudflare-do-alarm');
+  });
+  it('still rejects an unknown bootstrap mechanism', () => {
+    expect(() => ManagedRuntimeSchema.parse({ coder, bootstrap: { mechanism: 'other', inference_requests: null } })).toThrow();
   });
 });
