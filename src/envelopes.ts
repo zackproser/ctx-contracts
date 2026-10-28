@@ -61,6 +61,13 @@ export const ManagedJobSchema = z.object({
     model_policy: z.string().min(1).optional(),
     cache_write_tokens: z.number().int().nonnegative().optional(),
     unknown_reserved_usd: z.number().nonnegative().optional(),
+    // Held money split: in-flight reservations plus uncertain ones; exposure = priced + both.
+    open_reserved_usd: z.number().nonnegative().optional(),
+    exposure_usd: z.number().nonnegative().optional(),
+    // Priced model spend whose output allowance produced no visible text or usable tool call.
+    no_output_usd: z.number().nonnegative().optional(),
+    no_output_turns: z.number().int().nonnegative().optional(),
+    consecutive_no_output_turns: z.number().int().nonnegative().optional(),
     orb: z.object({
       amp_usd: z.number().nonnegative().nullable(),
       runtime_seconds: z.number().nonnegative().nullable(),

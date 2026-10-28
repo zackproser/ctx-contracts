@@ -184,3 +184,7 @@ Generic forms can declare a reviewed `request` binding every answer to an exact 
 Form confirmations may use a typed AlphaSights saved-availability endpoint and reviewed baseline instead of a visible receipt. Endpoint, advisor identity, timezone and baseline slots are bound to authorization. Evidence carries normalized fresh provider state; the shared verifier determines whether it preserves existing future availability and adds exactly the reviewed hours. Legacy visible confirmations retain their serialized bytes.
 
 Managed browser acceptance can declare an explicit same-page `reload` between actions and assertions; it cannot choose another navigation URL. Private Pi runner leases may carry up to five bounded JPEG design references, each tied to the retained source artifact and SHA-256. The image cap leaves room for two screenshots in the native request bound. Runner request bodies remain strict; lease/heartbeat responses tolerate additive server fields for pinned older clients.
+
+### Managed output accounting (2026-10-28)
+
+Managed job usage may report `open_reserved_usd` (in-flight reservations), `exposure_usd` (priced plus open plus uncertain reservations), `no_output_usd` (priced spend on model responses that used their whole output allowance without visible text or a usable tool call), `no_output_turns` and `consecutive_no_output_turns`. All are optional and additive; older snapshots remain valid. Held and uncertain amounts are exposure, not an invoice.
