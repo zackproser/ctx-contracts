@@ -125,6 +125,26 @@
           "type": "number",
           "minimum": 0
         },
+        "open_reserved_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "exposure_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "no_output_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "no_output_turns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "consecutive_no_output_turns": {
+          "type": "integer",
+          "minimum": 0
+        },
         "orb": {
           "type": "object",
           "properties": {

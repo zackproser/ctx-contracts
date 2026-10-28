@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ManagedBrowserAcceptanceSchema, SubmitManagedJobInputSchema } from '../src/envelopes.js';
+import { ManagedBrowserAcceptanceSchema, ManagedJobSchema, SubmitManagedJobInputSchema } from '../src/envelopes.js';
 
 const request = { idempotency_key: 'managed-retry-test', title: 'A game', prompt: 'Build a game' };
 const assertion = { action: 'assert', locator: { by: 'testId', testId: 'score' }, check: 'textEquals', expected: '0' };
@@ -29,5 +29,25 @@ describe('managed build admission and owner acceptance', () => {
       { ...assertion, script: 'return true' },
       { ...assertion, expected: 'x'.repeat(17000) }])
       expect(ManagedBrowserAcceptanceSchema.safeParse({ steps: [step, assertion] }).success).toBe(false);
+  });
+});
+
+describe('managed output accounting', () => {
+  const base = {
+    contract: 'ctx.managed-job.v1', job_id: '10000000-0000-4000-8000-000000000001', task_item_id: '10000000-0000-4000-8000-000000000001',
+    title: 't', state: 'running', status_url: 'https://ctx.test/s', accepted_at: '2026-10-28T00:00:00.000Z', deadline_at: '2026-10-28T01:00:00.000Z',
+    last_contact_at: null, last_progress_at: null, last_checkpoint_at: null, recent_events: [], build: null, deployment: null,
+    notification: { configured: false, pending: 0 }, error: null,
+  };
+  const usage = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, requests: 0, priced_usd: 0, reserved_usd: 0, budget_usd: 5,
+    pricing_version: 'p', billing_status: 'priced_usage_not_invoice', compute_usd: null, interface_usage: 'unavailable' };
+  it('keeps open, uncertain and no-output spend through a parse', () => {
+    const parsed = ManagedJobSchema.parse({ ...base, usage: { ...usage, reserved_usd: 0.9, unknown_reserved_usd: 0.4, open_reserved_usd: 0.5, exposure_usd: 1.2, no_output_usd: 0.33, no_output_turns: 1, consecutive_no_output_turns: 1 } });
+    expect(parsed.usage).toMatchObject({ open_reserved_usd: 0.5, exposure_usd: 1.2, no_output_usd: 0.33, no_output_turns: 1, consecutive_no_output_turns: 1 });
+  });
+  it('accepts older snapshots without the fields and rejects negative or fractional counts', () => {
+    expect(ManagedJobSchema.parse({ ...base, usage }).usage.no_output_usd).toBeUndefined();
+    expect(() => ManagedJobSchema.parse({ ...base, usage: { ...usage, no_output_usd: -1 } })).toThrow();
+    expect(() => ManagedJobSchema.parse({ ...base, usage: { ...usage, no_output_turns: 1.5 } })).toThrow();
   });
 });
