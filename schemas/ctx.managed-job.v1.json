@@ -338,7 +338,8 @@
                   "type": "string",
                   "enum": [
                     "amp-agent-start-hook",
-                    "amp-bootstrap-turn"
+                    "amp-bootstrap-turn",
+                    "cloudflare-do-alarm"
                   ]
                 },
                 "inference_requests": {

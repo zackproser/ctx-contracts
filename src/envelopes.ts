@@ -24,7 +24,8 @@ export const ManagedRuntimeSchema = z.object({
     policy_id: z.string().min(1),
   }).strict(),
   bootstrap: z.object({
-    mechanism: z.enum(['amp-agent-start-hook', 'amp-bootstrap-turn']),
+    // cloudflare-do-alarm: the runner lives in the job's own Durable Object, woken by its alarm (no bootstrap inference).
+    mechanism: z.enum(['amp-agent-start-hook', 'amp-bootstrap-turn', 'cloudflare-do-alarm']),
     inference_requests: z.number().int().nonnegative().nullable(),
   }).strict(),
 }).strict();
