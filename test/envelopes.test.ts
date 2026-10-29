@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ObligationIRSchema, TodoHandleSchema, VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema,
   WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema,
-  McpWorkClaimInputSchema, McpWorkCheckpointInputSchema, McpWorkMutationResultSchema,
+  McpWorkClaimInputSchema, McpWorkCheckpointInputSchema, McpWorkMutationResultSchema, ManagedJobControlInputSchema,
 } from '../src/envelopes.js';
 import { parseEnvelope } from '../src/registry.js';
 
@@ -182,5 +182,20 @@ describe('read-model envelopes', () => {
     for (const state of ['queued', 'running', 'needs_input', 'failed', 'delivered', 'verified']) {
       expect(TodoHandleSchema.shape.jobs.element.parse({ ...job, state }).state).toBe(state);
     }
+  });
+});
+
+describe('managed job controls', () => {
+  const control = { job_id: jobId, idempotency_key: 'accept-release-1' };
+  it('accepts an explicit verified-release acceptance naming its event, alongside the existing operations', () => {
+    const event_id = `${jobId}:candidate:${jobId}:1:${'b'.repeat(12)}:completion-held`;
+    expect(ManagedJobControlInputSchema.parse({ ...control, operation: 'accept_verified_release', event_id }))
+      .toEqual({ ...control, operation: 'accept_verified_release', event_id });
+    for (const operation of ['cancel', 'steer', 'acknowledge'])
+      expect(ManagedJobControlInputSchema.parse({ ...control, operation }).operation).toBe(operation);
+  });
+  it('still refuses an unknown operation and any extra field', () => {
+    expect(() => ManagedJobControlInputSchema.parse({ ...control, operation: 'accept' })).toThrow();
+    expect(() => ManagedJobControlInputSchema.parse({ ...control, operation: 'accept_verified_release', event_id: 'e', candidate_sha256: 'a'.repeat(64) })).toThrow();
   });
 });

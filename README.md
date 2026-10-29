@@ -144,7 +144,7 @@ await sha256({ schema: 'ctx.work-completion.v1', nodes, edges }); // 64 hex char
 | `@ctx/contracts` | `ctx` (server) | `ctx-cli` | Notes |
 |---|---|---|---|
 | 0.1.x | pins exact commit | supports N and N-1 | first extraction; identical bytes to the in-repo copies it replaced |
-| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, and optional steering/custody in node instructions |
+| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, optional steering/custody in node instructions, and the additive managed-job control `accept_verified_release` |
 
 MCP execution keeps harness identity (`harness`, `session_ref`) separate from
 the `mcp` transport. `McpWorkClaimInputSchema` and

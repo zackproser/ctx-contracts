@@ -7,10 +7,13 @@ import { z } from 'zod';
 
 // Managed builds are admitted before inference. Their runtime is private;
 // Grok and other owner clients use this same provider-independent contract.
+// `accept_verified_release` is the owner's explicit acceptance of a verified
+// release held for them; it names that release by the `event_id` of its
+// completion-held event and is never implied by steering or acknowledgement.
 export const ManagedJobControlInputSchema = z.object({
   job_id: z.string().uuid(),
   idempotency_key: z.string().min(8).max(96).regex(/^[A-Za-z0-9._:-]+$/),
-  operation: z.enum(['cancel', 'steer', 'acknowledge']),
+  operation: z.enum(['cancel', 'steer', 'acknowledge', 'accept_verified_release']),
   message: z.string().min(1).max(8000).optional(),
   event_id: z.string().optional(),
 }).strict();
