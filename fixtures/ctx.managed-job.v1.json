@@ -33,5 +33,9 @@
     "configured": false,
     "pending": 1
   },
-  "error": null
+  "error": null,
+  "custody": {
+    "runner_epoch": 1,
+    "fenced_refusals": 0
+  }
 }
