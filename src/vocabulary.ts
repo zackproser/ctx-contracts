@@ -103,7 +103,11 @@ export type WorkStatusAction = typeof WORK_STATUS_ACTIONS[number];
 export const WORK_EXECUTORS = ['orb', 'codex_api', 'claude_agent_sdk', 'mac_codex', 'mcp'] as const;
 export type WorkExecutor = typeof WORK_EXECUTORS[number];
 
-export const DELIVERY_MODES = ['report_only', 'pull_request'] as const;
+// report_only never publishes or pushes; pull_request authorizes repository
+// delivery. publish_after_verify keeps the executor report-only: after CTX
+// verifies the run, CTX itself publishes the run's retained output with
+// server-held credentials. Existing values keep their order and meaning.
+export const DELIVERY_MODES = ['report_only', 'pull_request', 'publish_after_verify'] as const;
 export type DeliveryMode = typeof DELIVERY_MODES[number];
 
 export const EFFORTS = ['low', 'medium', 'high', 'xhigh'] as const;
