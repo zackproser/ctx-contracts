@@ -87,6 +87,12 @@ export const ManagedJobSchema = z.object({
   runtime: ManagedRuntimeSchema.nullable().optional(),
   gates: z.object({ functional: ManagedGateSchema, deployment: ManagedGateSchema, visual: ManagedGateSchema }).strict().optional(),
   health: ManagedHealthSchema.optional(),
+  // Native-runtime custody, durable and monotonic within a job: the runner lease epoch, and how many requests from the
+  // job's own executor were refused as fenced. A job created before the count existed reports null (unknown, never 0).
+  custody: z.object({
+    runner_epoch: z.number().int().nonnegative(),
+    fenced_refusals: z.number().int().nonnegative().nullable(),
+  }).strict().optional(),
 });
 import {
   CARDINALITY_MODES, CHECK_KINDS, COMPLETION_GRAPH_STATES, COMPLETION_NODE_KINDS, COMPLETION_POLICIES,

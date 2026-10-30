@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ObligationIRSchema, TodoHandleSchema, VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema,
   WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema,
-  McpWorkClaimInputSchema, McpWorkCheckpointInputSchema, McpWorkMutationResultSchema, ManagedJobControlInputSchema,
+  McpWorkClaimInputSchema, McpWorkCheckpointInputSchema, McpWorkMutationResultSchema, ManagedJobControlInputSchema, ManagedJobSchema,
 } from '../src/envelopes.js';
 import { parseEnvelope } from '../src/registry.js';
 
@@ -197,5 +197,19 @@ describe('managed job controls', () => {
   it('still refuses an unknown operation and any extra field', () => {
     expect(() => ManagedJobControlInputSchema.parse({ ...control, operation: 'accept' })).toThrow();
     expect(() => ManagedJobControlInputSchema.parse({ ...control, operation: 'accept_verified_release', event_id: 'e', candidate_sha256: 'a'.repeat(64) })).toThrow();
+  });
+});
+
+describe('managed job custody', () => {
+  const job = JSON.parse(readFileSync(resolve(import.meta.dirname, '../fixtures/ctx.managed-job.v1.json'), 'utf8'));
+  it('carries the durable runner epoch and fenced-refusal count, with null for a count that predates the field', () => {
+    expect(ManagedJobSchema.parse(job).custody).toEqual({ runner_epoch: 1, fenced_refusals: 0 });
+    expect(ManagedJobSchema.parse({ ...job, custody: { runner_epoch: 3, fenced_refusals: null } }).custody).toEqual({ runner_epoch: 3, fenced_refusals: null });
+    const { custody: _custody, ...older } = job;
+    expect(ManagedJobSchema.parse(older).custody).toBeUndefined();
+  });
+  it('refuses a negative or fractional count and any extra custody field', () => {
+    for (const custody of [{ runner_epoch: -1, fenced_refusals: 0 }, { runner_epoch: 1, fenced_refusals: 0.5 }, { runner_epoch: 1, fenced_refusals: 0, retakes: 2 }, { runner_epoch: 1 }])
+      expect(() => ManagedJobSchema.parse({ ...job, custody })).toThrow();
   });
 });

@@ -509,6 +509,31 @@
         "receipt_ids"
       ],
       "additionalProperties": false
+    },
+    "custody": {
+      "type": "object",
+      "properties": {
+        "runner_epoch": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fenced_refusals": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "runner_epoch",
+        "fenced_refusals"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
