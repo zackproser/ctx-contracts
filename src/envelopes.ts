@@ -93,7 +93,8 @@ import {
   COMPLETION_STATUSES, DELIVERABLE_KINDS, DRAFT_FALLBACK_REASONS, DRAFT_GENERATORS, DRAFT_RECEIPT_VERIFIER_IDS,
   DRAFT_STATUSES, DRAFT_STEP_VERIFIER_IDS, DRAFT_STEP_VERIFIER_LABELS, DRAFT_TEMPLATES, IR_SOURCES,
   REPOSITORY_ROLES, WORK_EXECUTORS, WORK_RUN_STATES, WORK_STATUS_ACTIONS,
-  EXPERT_CALL_TASK, EXPERT_NETWORK_PROVIDERS,
+  EXPERT_CALL_TASK, EXPERT_NETWORK_PROVIDERS, EXPERT_NETWORKS_BANNING_AI_ANSWERS,
+  EXTERNAL_FORM_FILL_CAPTURES, EXTERNAL_FORM_FILL_KINDS,
 } from './vocabulary.js';
 
 const NonEmpty = z.string().trim().min(1);
@@ -752,3 +753,111 @@ export const ExternalFormStepSchema = z.object({
   evidence_digest: ExternalDigest.optional(),
 }).strict();
 export type ExternalFormStep = z.infer<typeof ExternalFormStepSchema>;
+
+// --- ctx.external-form-fill.v1: fill a form and stop before it is sent -----
+// Data for a browser worker. It names the form, the answer for each field the
+// worker may fill, and each field that is the owner's to fill (left empty, with
+// the reason). It cannot express a submit: `must_not_submit` is the literal
+// true, there is no submit locator or action, and unknown keys are refused.
+// The worker stops before any control in `stop_before` and hands back a
+// `ctx.external-form-fill-readback.v1`. Never written for a network that bans
+// AI-written answers.
+const ExternalFormFillControl = z.enum(['text', 'select', 'checkbox', 'radio', 'toggle', 'date', 'time']);
+const ExternalFormFillFieldSchema = z.object({
+  key: z.string().trim().min(1).max(200),
+  /** The question or field label as the form shows it, or as close as is known. */
+  label: z.string().trim().min(1).max(4000),
+  control: ExternalFormFillControl,
+  /** What to enter. Empty exactly when the field is the owner's. */
+  answer: z.string().max(8000),
+  /** True: the worker leaves the field empty and reports it. Only the owner fills it. */
+  needs_owner: z.boolean(),
+  /** Why the field is the owner's. Required when `needs_owner`. */
+  reason: z.string().trim().min(1).max(400).optional(),
+}).strict();
+/** Hosts a form of each kind lives on. A host matches itself and, where `subdomains`, its subdomains. */
+const FORM_FILL_HOSTS: Record<(typeof EXTERNAL_FORM_FILL_KINDS)[number], { hosts: string[]; subdomains: boolean; path: RegExp; provider?: string }> = {
+  google_form: { hosts: ['forms.gle', 'docs.google.com'], subdomains: false, path: /^\/(?:forms\/|[A-Za-z0-9_-]{6,}$)/ },
+  officehours_apply: { hosts: ['officehours.com', 'www.officehours.com'], subdomains: false, path: /^\/opportunity\/[A-Za-z0-9_-]{4,40}\/?$/, provider: 'officehours' },
+  tegus_form: { hosts: ['tegus.com', 'tegus.co', 'alpha-sense.com'], subdomains: true, path: /^\//, provider: 'tegus' },
+};
+export const ExternalFormFillSchema = z.object({
+  contract: z.literal('ctx.external-form-fill.v1'),
+  kind: z.enum(EXTERNAL_FORM_FILL_KINDS),
+  provider: z.enum(EXPERT_NETWORK_PROVIDERS),
+  url: HttpsUrl,
+  /** The invariant. A recipe that does not carry it is not a recipe. */
+  must_not_submit: z.literal(true),
+  /** Visible labels of the controls that send the form. The worker stops before any of them and activates none. */
+  stop_before: z.array(z.string().trim().min(1).max(120)).min(1).max(12),
+  fields: z.array(ExternalFormFillFieldSchema).max(60),
+  /** A field the recipe does not name is left empty and reported in the readback. There is no other policy. */
+  unmapped_fields: z.literal('leave_blank_and_report'),
+  /** What the worker captures and returns before it stops. */
+  readback: z.object({
+    contract: z.literal('ctx.external-form-fill-readback.v1'),
+    screenshot: z.literal('full_page_after_fill'),
+    capture: z.array(z.enum(EXTERNAL_FORM_FILL_CAPTURES)).length(EXTERNAL_FORM_FILL_CAPTURES.length),
+  }).strict(),
+}).strict().superRefine((recipe, ctx) => {
+  const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: z.ZodIssueCode.custom, path, message });
+  if (EXPERT_NETWORKS_BANNING_AI_ANSWERS.includes(recipe.provider))
+    issue(['provider'], 'this network bans AI-written answers: the owner fills its forms himself');
+  const rule = FORM_FILL_HOSTS[recipe.kind];
+  if (rule.provider && rule.provider !== recipe.provider) issue(['provider'], `a ${recipe.kind} recipe is for ${rule.provider} only`);
+  let url: URL | null = null;
+  try { url = new URL(recipe.url); } catch { /* HttpsUrl already reported it */ }
+  if (url) {
+    const host = url.hostname.toLowerCase();
+    if (url.username || url.password) issue(['url'], 'the form URL must not carry credentials');
+    if (!rule.hosts.some((allowed) => host === allowed || (rule.subdomains && host.endsWith(`.${allowed}`))) || !rule.path.test(url.pathname) ||
+      (recipe.kind === 'google_form' && host === 'docs.google.com' && !url.pathname.startsWith('/forms/')))
+      issue(['url'], `not a ${recipe.kind} URL`);
+  }
+  const seen = new Set<string>();
+  recipe.fields.forEach((field, index) => {
+    if (seen.has(field.key)) issue(['fields', index, 'key'], 'field keys must be unique');
+    seen.add(field.key);
+    if (field.needs_owner && field.answer !== '') issue(['fields', index, 'answer'], "a field that is the owner's carries no answer");
+    if (field.needs_owner && !field.reason) issue(['fields', index, 'reason'], "say why the field is the owner's");
+    if (!field.needs_owner && !field.answer.trim()) issue(['fields', index, 'answer'], 'a field to fill needs an answer; mark it needs_owner otherwise');
+  });
+  if (recipe.readback.capture.some((capture, index) => capture !== EXTERNAL_FORM_FILL_CAPTURES[index]))
+    issue(['readback', 'capture'], 'a readback captures the whole list, in order');
+});
+export type ExternalFormFill = z.infer<typeof ExternalFormFillSchema>;
+
+// --- ctx.external-form-fill-readback.v1: what the worker saw when it stopped -
+// The worker's account of the filled, unsent form. `submitted` is the literal
+// false: a readback cannot report a submit, and anything that looks like a
+// claim of one (a confirmation text, a phase) is an unknown key and refused.
+export const ExternalFormFillReadbackSchema = z.object({
+  contract: z.literal('ctx.external-form-fill-readback.v1'),
+  /** `sha256` of the recipe this readback answers. */
+  recipe_digest: ExternalDigest,
+  /** Where the browser was when it stopped. */
+  url: HttpsUrl,
+  page_title: z.string().max(500),
+  captured_at: z.string().datetime({ offset: true }),
+  submitted: z.literal(false),
+  /** The send control the worker stopped before, as labelled; null when it saw none. */
+  stopped_before: z.string().trim().min(1).max(120).nullable(),
+  /** Every send control visible when it stopped. */
+  submit_controls: z.array(z.string().trim().min(1).max(120)).max(12),
+  /** Each field the recipe named: the value left in it, and whether the worker entered it. */
+  fields: z.array(z.object({
+    key: z.string().trim().min(1).max(200), value: z.string().max(8000), filled: z.boolean(),
+  }).strict()).max(60),
+  /** Each field on the form the recipe did not name. Left empty. */
+  unmapped_fields: z.array(z.object({
+    label: z.string().trim().min(1).max(4000), control: ExternalFormFillControl, required: z.boolean(),
+    options: z.array(z.string().max(400)).max(60).optional(),
+  }).strict()).max(100),
+  validation_errors: ErrorList,
+  /** The full-page screenshot of the filled form, by digest. The bytes are retained apart from this record. */
+  screenshot: z.object({
+    media_type: z.enum(['image/png', 'image/jpeg']), sha256: ExternalDigest,
+    bytes: z.number().int().positive().max(20_000_000), artifact_id: z.string().uuid().optional(),
+  }).strict(),
+}).strict();
+export type ExternalFormFillReadback = z.infer<typeof ExternalFormFillReadbackSchema>;

@@ -1,0 +1,43 @@
+{
+  "contract": "ctx.external-form-fill.v1",
+  "kind": "officehours_apply",
+  "provider": "officehours",
+  "url": "https://officehours.com/opportunity/qF1_ND?prospectId=fixture",
+  "must_not_submit": true,
+  "stop_before": [
+    "Submit",
+    "Apply",
+    "Confirm"
+  ],
+  "fields": [
+    {
+      "key": "rate",
+      "label": "Hourly rate",
+      "control": "text",
+      "answer": "650",
+      "needs_owner": false
+    },
+    {
+      "key": "availability",
+      "label": "Upcoming availability",
+      "control": "text",
+      "answer": "",
+      "needs_owner": true,
+      "reason": "no calendar-checked time is on the packet"
+    }
+  ],
+  "unmapped_fields": "leave_blank_and_report",
+  "readback": {
+    "contract": "ctx.external-form-fill-readback.v1",
+    "screenshot": "full_page_after_fill",
+    "capture": [
+      "final_url",
+      "page_title",
+      "field_values",
+      "unmapped_fields",
+      "submit_controls",
+      "validation_errors",
+      "screenshot"
+    ]
+  }
+}

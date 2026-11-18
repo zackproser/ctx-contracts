@@ -1,0 +1,62 @@
+{
+  "contract": "ctx.external-form-fill-readback.v1",
+  "recipe_digest": "87999f27c2f16ca2b81b4afa26b08758461ab2d183f71b48ead0e1cfcb58cfe8",
+  "url": "https://docs.google.com/forms/d/e/1FAIpQLSfixture/viewform",
+  "page_title": "Software Development Workflow Automation: screening questions",
+  "captured_at": "2026-11-18T14:05:00.000Z",
+  "submitted": false,
+  "stopped_before": "Submit",
+  "submit_controls": [
+    "Submit"
+  ],
+  "fields": [
+    {
+      "key": "rate",
+      "value": "$650/hr",
+      "filled": true
+    },
+    {
+      "key": "workflow",
+      "value": "A coding task starts in one agent, a second agent reviews the change, and I review and merge.",
+      "filled": true
+    },
+    {
+      "key": "scale",
+      "value": "",
+      "filled": false
+    },
+    {
+      "key": "impact",
+      "value": "",
+      "filled": false
+    },
+    {
+      "key": "ai_attestation",
+      "value": "",
+      "filled": false
+    }
+  ],
+  "unmapped_fields": [
+    {
+      "label": "Which gaps would you pay a vendor to fix?",
+      "control": "text",
+      "required": true
+    },
+    {
+      "label": "Which of these tools have you used?",
+      "control": "checkbox",
+      "required": false,
+      "options": [
+        "Tool A",
+        "Tool B",
+        "None of these"
+      ]
+    }
+  ],
+  "validation_errors": [],
+  "screenshot": {
+    "media_type": "image/png",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "bytes": 184213
+  }
+}

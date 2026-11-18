@@ -59,6 +59,24 @@ export function expertNetworkForSenderDomain(domain: string): ExpertNetworkProvi
   return null;
 }
 
+// Networks whose policy bans AI-written answers. The owner accepts and answers
+// these himself: nothing drafts an answer for them, and no assisted form fill is
+// ever written for them (`ExternalFormFillSchema` refuses both).
+export const EXPERT_NETWORKS_BANNING_AI_ANSWERS: readonly ExpertNetworkProvider[] = ['glg', 'guidepoint'];
+
+// Forms a browser worker may fill and then stop at, never submit.
+// - google_form: a Google Form (an AlphaSights screener behind a forms.gle link).
+// - officehours_apply: the Office Hours apply page for one opportunity.
+// - tegus_form: a form on a Tegus (AlphaSense) host.
+export const EXTERNAL_FORM_FILL_KINDS = ['google_form', 'officehours_apply', 'tegus_form'] as const;
+export type ExternalFormFillKind = typeof EXTERNAL_FORM_FILL_KINDS[number];
+// What a fill-and-stop readback captures before the worker stops. A recipe
+// asks for all of it, in this order; there is no shorter list to ask for.
+export const EXTERNAL_FORM_FILL_CAPTURES = [
+  'final_url', 'page_title', 'field_values', 'unmapped_fields', 'submit_controls', 'validation_errors', 'screenshot',
+] as const;
+export type ExternalFormFillCapture = typeof EXTERNAL_FORM_FILL_CAPTURES[number];
+
 export const WORK_EDGE_KINDS = [
   'contains', 'blocks', 'depends_on', 'relates_to', 'evidence_for', 'delivers',
 ] as const;

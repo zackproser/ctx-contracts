@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.external-form-fill-readback.v1.json",
+  "title": "ctx.external-form-fill-readback.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.external-form-fill-readback.v1"
+    },
+    "recipe_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "page_title": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "submitted": {
+      "type": "boolean",
+      "const": false
+    },
+    "stopped_before": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "submit_controls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "maxItems": 12
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 8000
+          },
+          "filled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "filled"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 60
+    },
+    "unmapped_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "control": {
+            "type": "string",
+            "enum": [
+              "text",
+              "select",
+              "checkbox",
+              "radio",
+              "toggle",
+              "date",
+              "time"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 400
+            },
+            "maxItems": 60
+          }
+        },
+        "required": [
+          "label",
+          "control",
+          "required"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100
+    },
+    "validation_errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      },
+      "maxItems": 50
+    },
+    "screenshot": {
+      "type": "object",
+      "properties": {
+        "media_type": {
+          "type": "string",
+          "enum": [
+            "image/png",
+            "image/jpeg"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 20000000
+        },
+        "artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "media_type",
+        "sha256",
+        "bytes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract",
+    "recipe_digest",
+    "url",
+    "page_title",
+    "captured_at",
+    "submitted",
+    "stopped_before",
+    "submit_controls",
+    "fields",
+    "unmapped_fields",
+    "validation_errors",
+    "screenshot"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zackproser/ctx-contracts/schemas/ctx.external-form-fill.v1.json",
+  "title": "ctx.external-form-fill.v1",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "ctx.external-form-fill.v1"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "google_form",
+        "officehours_apply",
+        "tegus_form"
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "alphasights",
+        "glg",
+        "tegus",
+        "guidepoint",
+        "officehours",
+        "coleman",
+        "thirdbridge"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "must_not_submit": {
+      "type": "boolean",
+      "const": true
+    },
+    "stop_before": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "minItems": 1,
+      "maxItems": 12
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "control": {
+            "type": "string",
+            "enum": [
+              "text",
+              "select",
+              "checkbox",
+              "radio",
+              "toggle",
+              "date",
+              "time"
+            ]
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 8000
+          },
+          "needs_owner": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 400
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "control",
+          "answer",
+          "needs_owner"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 60
+    },
+    "unmapped_fields": {
+      "type": "string",
+      "const": "leave_blank_and_report"
+    },
+    "readback": {
+      "type": "object",
+      "properties": {
+        "contract": {
+          "type": "string",
+          "const": "ctx.external-form-fill-readback.v1"
+        },
+        "screenshot": {
+          "type": "string",
+          "const": "full_page_after_fill"
+        },
+        "capture": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "final_url",
+              "page_title",
+              "field_values",
+              "unmapped_fields",
+              "submit_controls",
+              "validation_errors",
+              "screenshot"
+            ]
+          },
+          "minItems": 7,
+          "maxItems": 7
+        }
+      },
+      "required": [
+        "contract",
+        "screenshot",
+        "capture"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract",
+    "kind",
+    "provider",
+    "url",
+    "must_not_submit",
+    "stop_before",
+    "fields",
+    "unmapped_fields",
+    "readback"
+  ],
+  "additionalProperties": false
+}
