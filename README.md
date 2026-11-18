@@ -87,6 +87,8 @@ The extensible read-model envelopes use `.passthrough()`: the schema pins the co
 | `ctx.deployment-release-evidence.v1` | `DeploymentEvidence` | Release verifier evidence |
 | `ctx.browser-smoke-evidence.v1` | `BrowserEvidence` | Browser verifier evidence |
 | `ctx.health.v1` / `ctx.app-health.v1` | `HealthSchema` / `AppHealthSchema` | Health probes embedded in evidence |
+| `ctx.external-form-fill.v1` | `ExternalFormFillSchema` | A fill-and-stop recipe for one expert-network form: fields to fill, fields left for the owner, what to stop before. It cannot express a submit |
+| `ctx.external-form-fill-readback.v1` | `ExternalFormFillReadbackSchema` | What the browser worker saw when it stopped: field values, fields the recipe did not name, send controls, a screenshot digest. It cannot claim a submit |
 
 ### Compact work status
 
@@ -126,6 +128,8 @@ import { WORK_RUN_STATES, WORK_EXECUTORS, COMPLETION_STATUSES, type WorkRunState
 new Option('--executor <executor>').choices([...WORK_EXECUTORS]);
 ```
 
+Expert networks: `EXPERT_NETWORK_PROVIDERS` (`alphasights`, `glg`, `tegus`, `guidepoint`, `officehours`, `coleman`, `thirdbridge`), `EXPERT_NETWORK_LABELS`, `EXPERT_NETWORK_DOMAINS` (registered authenticated sender domains) and `EXPERT_NETWORK_SUBDOMAIN_SENDERS` (networks that send from a subdomain of a registered domain: Office Hours). `expertNetworkForSenderDomain(domain)` names the network for a sender domain: an exact match for every network, a subdomain only for a subdomain sender, and never a domain that merely ends the same way. A listed network can be filed as a case; being listed grants no authority to send, accept or submit anything, and the caller still authenticates the mail.
+
 `WORK_NODE_KINDS`, `WORK_EDGE_KINDS`, `WORK_RESOURCE_TYPES` (alias `ARTIFACT_TYPES`), `WORK_RUN_STATES`, `WORK_RESOURCE_HEALTH`, `COMPLETION_NODE_KINDS`, `COMPLETION_STATUSES`, `COMPLETION_POLICIES`, `CARDINALITY_MODES`, `COMPLETION_GRAPH_STATES`, `WORK_STATUS_ACTIONS`, `WORK_EXECUTORS`, `DELIVERY_MODES`, `EFFORTS`, the compiler lists (`DRAFT_GENERATORS`, `DRAFT_STATUSES`, `DRAFT_FALLBACK_REASONS`, `DRAFT_TEMPLATES`, `DRAFT_STEP_VERIFIER_IDS`, `DRAFT_STEP_VERIFIER_LABELS`, `DRAFT_RECEIPT_VERIFIER_IDS`, `REPOSITORY_ROLES`, `DELIVERABLE_KINDS`, `CHECK_KINDS`), plus the `WorkResource` interface. The server is the only writer of these lists.
 
 ### Canonical digest
@@ -144,7 +148,7 @@ await sha256({ schema: 'ctx.work-completion.v1', nodes, edges }); // 64 hex char
 | `@ctx/contracts` | `ctx` (server) | `ctx-cli` | Notes |
 |---|---|---|---|
 | 0.1.x | pins exact commit | supports N and N-1 | first extraction; identical bytes to the in-repo copies it replaced |
-| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, optional steering/custody in node instructions, and the additive managed-job control `accept_verified_release` |
+| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, optional steering/custody in node instructions, the additive managed-job control `accept_verified_release`, and three appended expert networks (`officehours`, `coleman`, `thirdbridge`) with `EXPERT_NETWORK_SUBDOMAIN_SENDERS` and `expertNetworkForSenderDomain`, and two new envelopes, `ctx.external-form-fill.v1` and `ctx.external-form-fill-readback.v1`, with `EXTERNAL_FORM_FILL_KINDS`, `EXTERNAL_FORM_FILL_CAPTURES` and `EXPERT_NETWORKS_BANNING_AI_ANSWERS` |
 
 MCP execution keeps harness identity (`harness`, `session_ref`) separate from
 the `mcp` transport. `McpWorkClaimInputSchema` and
@@ -155,7 +159,7 @@ an immutable receipt alongside current instruction and next-action reads.
 
 * Envelope literals are versioned in the name (`.v1`). A breaking shape change is a new literal, never a silent edit.
 * Adding an optional field or a passthrough-tolerated field is a minor bump. `ctx` pins an exact commit; `ctx-cli` must keep parsing the previous minor too (the `obligations` and `repository` fields show the pattern: optional on the client, present on the newer server).
-* `stable`/`sha256` and the vocabulary lists are frozen in place; a change there is a major bump and a data migration in `ctx`.
+* `stable`/`sha256` and the vocabulary lists are frozen in place; a change there is a major bump and a data migration in `ctx`. Appending a value (a new expert network) changes no stored row and is additive: existing values keep their order and meaning.
 
 ## Contributing
 
@@ -178,6 +182,8 @@ MIT, see [LICENSE](LICENSE). Extracted from `ctx` and `ctx-cli`; see [NOTICE](NO
 `ctx.external-form-plan.v1` may declare one optional `submit_confirmation` with an exact visible prompt, exact button text and required visible guards. It is included in the authorized plan digest; omitted steps preserve existing plan bytes. The broker may click it only before any provider mutation, and the entire attempt still permits at most one mutation. The dialog is never evidence of a saved form; completion requires independent fresh readback.
 
 Generic forms can declare a reviewed `request` binding every answer to an exact flat JSON or URL-encoded field, alongside explicit static fields. Unknown payload fields, duplicate fields, extra writes and unsupported request shapes are rejected by the broker. Radio controls use a unique locator for the reviewed option and a boolean value. Omitted request declarations preserve existing plan digests for readback; new generic writes require a declaration.
+
+`ctx.external-form-fill.v1` is a recipe for a browser worker to fill an expert-network form and stop before it is sent. `kind` is one of `EXTERNAL_FORM_FILL_KINDS` (`google_form`, `officehours_apply`, `tegus_form`) and the URL must be a form of that kind over HTTPS with no credentials. Each field carries its `answer`, or `needs_owner: true` with an empty answer and a `reason`: the worker leaves those empty. `must_not_submit` is the literal `true`, `stop_before` lists the send controls to stop at, `unmapped_fields` is always `leave_blank_and_report`, and unknown keys are refused, so the contract has no way to say "submit". A recipe is refused for any network in `EXPERT_NETWORKS_BANNING_AI_ANSWERS` (GLG, Guidepoint). `readback` asks for every item in `EXTERNAL_FORM_FILL_CAPTURES` and a full-page screenshot. `ctx.external-form-fill-readback.v1` is the answer: the recipe's digest, where the browser stopped, the value left in each named field, every field the recipe did not name, the send controls visible, validation errors, and the screenshot by digest. `submitted` is the literal `false`. Neither contract carries completion or submission authority; the existing `ctx.external-form-plan.v1` path, with owner authorization and a fenced operation, remains the only way a form is submitted.
 
 `ctx.external-form-step.v1` is a bounded, redacted action journal for one fenced operation. It carries ordered action names, field indices and evidence digests, never page contents, capability URLs, credentials or completion authority. Provider labels and authenticated sender domains are shared vocabulary; intake recognition alone does not enable browser submission.
 

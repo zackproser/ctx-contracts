@@ -18,17 +18,64 @@ export const EXPERT_CALL_TASK = {
   id: 'expert_consultation', label: 'Expert calls',
   description: 'Prepare an expert consultation, complete required packets, and arrange the call.',
 } as const;
-export const EXPERT_NETWORK_PROVIDERS = ['alphasights', 'glg', 'tegus', 'guidepoint'] as const;
+// A network in this list can be filed as a case. Being listed never grants
+// authority to send a reply, accept a project or submit a form. New networks are
+// appended, so the first four keep their order.
+export const EXPERT_NETWORK_PROVIDERS = [
+  'alphasights', 'glg', 'tegus', 'guidepoint', 'officehours', 'coleman', 'thirdbridge',
+] as const;
 export type ExpertNetworkProvider = typeof EXPERT_NETWORK_PROVIDERS[number];
 export const EXPERT_NETWORK_LABELS: Record<ExpertNetworkProvider, string> = {
   alphasights: 'AlphaSights', glg: 'GLG', tegus: 'Tegus', guidepoint: 'Guidepoint',
+  officehours: 'Office Hours', coleman: 'Coleman', thirdbridge: 'Third Bridge',
 };
-// Exact authenticated sender domains. Link domains are separately constrained by
+// Registered authenticated sender domains. Link domains are separately constrained by
 // each adapter; recognizing a provider never grants authority to submit a form.
 export const EXPERT_NETWORK_DOMAINS: Record<ExpertNetworkProvider, readonly string[]> = {
   alphasights: ['alphasights.com'], glg: ['glgroup.com', 'glg.it'],
   tegus: ['tegus.com'], guidepoint: ['guidepointglobal.com', 'guidepoint.com'],
+  officehours: ['officehours.com'], coleman: ['colemanrg.com'], thirdbridge: ['thirdbridge.com'],
 };
+// Networks that send from subdomains of a registered domain (Office Hours mail
+// comes from onboarding.officehours.com). For every other network the sender
+// domain must equal a registered domain exactly.
+export const EXPERT_NETWORK_SUBDOMAIN_SENDERS: readonly ExpertNetworkProvider[] = ['officehours'];
+
+/**
+ * The network a sender domain belongs to, or null. Exact match on a registered
+ * domain for every network; a subdomain counts only for a network listed in
+ * `EXPERT_NETWORK_SUBDOMAIN_SENDERS`. A domain that merely ends the same way
+ * ("notofficehours.com", "officehours.com.evil.example") is no network. The
+ * caller still has to authenticate the mail: this only names the sender.
+ */
+export function expertNetworkForSenderDomain(domain: string): ExpertNetworkProvider | null {
+  const sender = domain.trim().toLowerCase();
+  if (!sender) return null;
+  for (const provider of EXPERT_NETWORK_PROVIDERS) {
+    const subdomains = EXPERT_NETWORK_SUBDOMAIN_SENDERS.includes(provider);
+    if (EXPERT_NETWORK_DOMAINS[provider].some((registered) =>
+      sender === registered || (subdomains && sender.endsWith(`.${registered}`)))) return provider;
+  }
+  return null;
+}
+
+// Networks whose policy bans AI-written answers. The owner accepts and answers
+// these himself: nothing drafts an answer for them, and no assisted form fill is
+// ever written for them (`ExternalFormFillSchema` refuses both).
+export const EXPERT_NETWORKS_BANNING_AI_ANSWERS: readonly ExpertNetworkProvider[] = ['glg', 'guidepoint'];
+
+// Forms a browser worker may fill and then stop at, never submit.
+// - google_form: a Google Form (an AlphaSights screener behind a forms.gle link).
+// - officehours_apply: the Office Hours apply page for one opportunity.
+// - tegus_form: a form on a Tegus (AlphaSense) host.
+export const EXTERNAL_FORM_FILL_KINDS = ['google_form', 'officehours_apply', 'tegus_form'] as const;
+export type ExternalFormFillKind = typeof EXTERNAL_FORM_FILL_KINDS[number];
+// What a fill-and-stop readback captures before the worker stops. A recipe
+// asks for all of it, in this order; there is no shorter list to ask for.
+export const EXTERNAL_FORM_FILL_CAPTURES = [
+  'final_url', 'page_title', 'field_values', 'unmapped_fields', 'submit_controls', 'validation_errors', 'screenshot',
+] as const;
+export type ExternalFormFillCapture = typeof EXTERNAL_FORM_FILL_CAPTURES[number];
 
 export const WORK_EDGE_KINDS = [
   'contains', 'blocks', 'depends_on', 'relates_to', 'evidence_for', 'delivers',

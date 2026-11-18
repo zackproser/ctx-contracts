@@ -1,0 +1,66 @@
+{
+  "contract": "ctx.external-form-fill.v1",
+  "kind": "google_form",
+  "provider": "alphasights",
+  "url": "https://forms.gle/uaB8WecpevwYX4Ck9",
+  "must_not_submit": true,
+  "stop_before": [
+    "Submit",
+    "Send",
+    "Next"
+  ],
+  "fields": [
+    {
+      "key": "rate",
+      "label": "Hourly rate",
+      "control": "text",
+      "answer": "$650/hr",
+      "needs_owner": false
+    },
+    {
+      "key": "workflow",
+      "label": "Describe one workflow in use today",
+      "control": "text",
+      "answer": "A coding task starts in one agent, a second agent reviews the change, and I review and merge.",
+      "needs_owner": false
+    },
+    {
+      "key": "scale",
+      "label": "How many people does this workflow cover?",
+      "control": "text",
+      "answer": "",
+      "needs_owner": true,
+      "reason": "not on file: only the owner knows the team size"
+    },
+    {
+      "key": "impact",
+      "label": "What measurable impact have you seen?",
+      "control": "text",
+      "answer": "",
+      "needs_owner": true,
+      "reason": "no measured figure is on file"
+    },
+    {
+      "key": "ai_attestation",
+      "label": "I confirm these answers are my own",
+      "control": "checkbox",
+      "answer": "",
+      "needs_owner": true,
+      "reason": "a personal attestation: only the owner ticks it"
+    }
+  ],
+  "unmapped_fields": "leave_blank_and_report",
+  "readback": {
+    "contract": "ctx.external-form-fill-readback.v1",
+    "screenshot": "full_page_after_fill",
+    "capture": [
+      "final_url",
+      "page_title",
+      "field_values",
+      "unmapped_fields",
+      "submit_controls",
+      "validation_errors",
+      "screenshot"
+    ]
+  }
+}

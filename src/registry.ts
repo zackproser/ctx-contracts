@@ -4,6 +4,7 @@ import type { z } from 'zod';
 import { ManagedOrbAssignmentSchema, OrbSteeringEnvelopeSchema } from './managed-runner.js';
 import {
   ManagedJobSchema, ExternalPacketSchema, ExternalFormPlanSchema, ExternalFormEvidenceSchema, ExternalFormStepSchema,
+  ExternalFormFillSchema, ExternalFormFillReadbackSchema,
   AppHealthSchema, BrowserEvidence, DeploymentEvidence, HealthSchema, ObligationIRSchema, TodoHandleSchema,
   VerifierPlanSchema, WebJourneySchema, WorkCompletionSchema, WorkGraphLintSchema,
   WorkNodeInstructionsSchema, WorkOutcomeDraftSchema, WorkRunDetailSchema, WorkRunLaunchSchema, WorkStatusSchema,
@@ -17,6 +18,8 @@ export const ENVELOPES = {
   'ctx.external-form-plan.v1': ExternalFormPlanSchema,
   'ctx.external-form-evidence.v1': ExternalFormEvidenceSchema,
   'ctx.external-form-step.v1': ExternalFormStepSchema,
+  'ctx.external-form-fill.v1': ExternalFormFillSchema,
+  'ctx.external-form-fill-readback.v1': ExternalFormFillReadbackSchema,
   'ctx.web-journey.v1': WebJourneySchema,
   'ctx.work-graph-lint.v1': WorkGraphLintSchema,
   'ctx.work-obligation-ir.v1': ObligationIRSchema,
