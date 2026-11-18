@@ -126,6 +126,8 @@ import { WORK_RUN_STATES, WORK_EXECUTORS, COMPLETION_STATUSES, type WorkRunState
 new Option('--executor <executor>').choices([...WORK_EXECUTORS]);
 ```
 
+Expert networks: `EXPERT_NETWORK_PROVIDERS` (`alphasights`, `glg`, `tegus`, `guidepoint`, `officehours`, `coleman`, `thirdbridge`), `EXPERT_NETWORK_LABELS`, `EXPERT_NETWORK_DOMAINS` (registered authenticated sender domains) and `EXPERT_NETWORK_SUBDOMAIN_SENDERS` (networks that send from a subdomain of a registered domain: Office Hours). `expertNetworkForSenderDomain(domain)` names the network for a sender domain: an exact match for every network, a subdomain only for a subdomain sender, and never a domain that merely ends the same way. A listed network can be filed as a case; being listed grants no authority to send, accept or submit anything, and the caller still authenticates the mail.
+
 `WORK_NODE_KINDS`, `WORK_EDGE_KINDS`, `WORK_RESOURCE_TYPES` (alias `ARTIFACT_TYPES`), `WORK_RUN_STATES`, `WORK_RESOURCE_HEALTH`, `COMPLETION_NODE_KINDS`, `COMPLETION_STATUSES`, `COMPLETION_POLICIES`, `CARDINALITY_MODES`, `COMPLETION_GRAPH_STATES`, `WORK_STATUS_ACTIONS`, `WORK_EXECUTORS`, `DELIVERY_MODES`, `EFFORTS`, the compiler lists (`DRAFT_GENERATORS`, `DRAFT_STATUSES`, `DRAFT_FALLBACK_REASONS`, `DRAFT_TEMPLATES`, `DRAFT_STEP_VERIFIER_IDS`, `DRAFT_STEP_VERIFIER_LABELS`, `DRAFT_RECEIPT_VERIFIER_IDS`, `REPOSITORY_ROLES`, `DELIVERABLE_KINDS`, `CHECK_KINDS`), plus the `WorkResource` interface. The server is the only writer of these lists.
 
 ### Canonical digest
@@ -144,7 +146,7 @@ await sha256({ schema: 'ctx.work-completion.v1', nodes, edges }); // 64 hex char
 | `@ctx/contracts` | `ctx` (server) | `ctx-cli` | Notes |
 |---|---|---|---|
 | 0.1.x | pins exact commit | supports N and N-1 | first extraction; identical bytes to the in-repo copies it replaced |
-| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, optional steering/custody in node instructions, and the additive managed-job control `accept_verified_release` |
+| 1.0.x | pins exact commit; adds the `mcp` executor in its database migration | older read envelopes remain valid | MCP session claims, graph-fenced checkpoints, optional steering/custody in node instructions, the additive managed-job control `accept_verified_release`, and three appended expert networks (`officehours`, `coleman`, `thirdbridge`) with `EXPERT_NETWORK_SUBDOMAIN_SENDERS` and `expertNetworkForSenderDomain` |
 
 MCP execution keeps harness identity (`harness`, `session_ref`) separate from
 the `mcp` transport. `McpWorkClaimInputSchema` and
@@ -155,7 +157,7 @@ an immutable receipt alongside current instruction and next-action reads.
 
 * Envelope literals are versioned in the name (`.v1`). A breaking shape change is a new literal, never a silent edit.
 * Adding an optional field or a passthrough-tolerated field is a minor bump. `ctx` pins an exact commit; `ctx-cli` must keep parsing the previous minor too (the `obligations` and `repository` fields show the pattern: optional on the client, present on the newer server).
-* `stable`/`sha256` and the vocabulary lists are frozen in place; a change there is a major bump and a data migration in `ctx`.
+* `stable`/`sha256` and the vocabulary lists are frozen in place; a change there is a major bump and a data migration in `ctx`. Appending a value (a new expert network) changes no stored row and is additive: existing values keep their order and meaning.
 
 ## Contributing
 
