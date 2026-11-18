@@ -47,9 +47,11 @@ describe('expert network vocabulary', () => {
     expect(Object.keys(EXPERT_NETWORK_DOMAINS).sort()).toEqual([...EXPERT_NETWORK_PROVIDERS].sort());
   });
 
-  it('says which networks send from subdomains of their registered domain: Office Hours only', () => {
+  it('says which networks send from subdomains of their registered domain: Office Hours and Coleman', () => {
     const list = (vocabulary as Record<string, unknown>).EXPERT_NETWORK_SUBDOMAIN_SENDERS;
-    expect(list).toEqual(['officehours']);
+    // Coleman's invitation of Nov 17, 2026 came from rng@outreach.colemanrg.com (its mail system rewrites
+    // the From onto that subdomain and puts the person's own address in Reply-To).
+    expect(list).toEqual(['officehours', 'coleman']);
   });
 
   it('resolves a sender domain to its network: exact for every network, a subdomain only where the network sends from one', () => {
@@ -62,9 +64,11 @@ describe('expert network vocabulary', () => {
     expect(resolve('officehours.com')).toBe('officehours');
     expect(resolve('onboarding.officehours.com')).toBe('officehours');
     expect(resolve('colemanrg.com')).toBe('coleman');
+    expect(resolve('outreach.colemanrg.com')).toBe('coleman');
+    expect(resolve(' OUTREACH.ColemanRG.com ')).toBe('coleman');
+    expect(resolve('mail.outreach.colemanrg.com')).toBe('coleman');
     expect(resolve('thirdbridge.com')).toBe('thirdbridge');
     // A subdomain is the network only where the network is known to send from one.
-    expect(resolve('mail.colemanrg.com')).toBeNull();
     expect(resolve('mail.thirdbridge.com')).toBeNull();
     expect(resolve('mail.alphasights.com')).toBeNull();
     // Nothing that merely ends the same way, and nothing that is not a domain.
@@ -72,6 +76,21 @@ describe('expert network vocabulary', () => {
     expect(resolve('officehours.com.evil.example')).toBeNull();
     expect(resolve('evil-thirdbridge.com')).toBeNull();
     expect(resolve('')).toBeNull();
+  });
+
+  it('never takes a look-alike for a subdomain sender: only a real subdomain of the registered domain counts', () => {
+    const resolve = (vocabulary as Record<string, unknown>).expertNetworkForSenderDomain as (domain: string) => string | null;
+    for (const domain of [
+      // Ends with the registered domain without being under it, or has it in the middle.
+      'colemanrg.com.evil.test', 'outreach.colemanrg.com.evil.test', 'evilcolemanrg.com', 'evil-colemanrg.com',
+      'notofficehours.com', 'officehours.com.evil.example', 'xofficehours.com',
+      // Near misses and Coleman's link-only domain, which no Coleman mail is sent from.
+      'colemanrg.co', 'colemanrg.com.', 'colemanerm.com', 'experts.coleman.colemanerm.com',
+      // Not a domain at all: an empty, damaged or padded label, or an address.
+      '.colemanrg.com', 'outreach..colemanrg.com', '-outreach.colemanrg.com', 'outreach-.colemanrg.com',
+      'out reach.colemanrg.com', 'out_reach.colemanrg.com', 'evil.test@outreach.colemanrg.com', 'rng@colemanrg.com',
+      '.officehours.com', 'evil.test@onboarding.officehours.com',
+    ]) expect(resolve(domain), domain).toBeNull();
   });
 
   it.each(['officehours', 'coleman', 'thirdbridge'])('classifies a %s case under the one task family', (provider) => {
