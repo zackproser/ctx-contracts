@@ -36,21 +36,29 @@ export const EXPERT_NETWORK_DOMAINS: Record<ExpertNetworkProvider, readonly stri
   tegus: ['tegus.com'], guidepoint: ['guidepointglobal.com', 'guidepoint.com'],
   officehours: ['officehours.com'], coleman: ['colemanrg.com'], thirdbridge: ['thirdbridge.com'],
 };
-// Networks that send from subdomains of a registered domain (Office Hours mail
-// comes from onboarding.officehours.com). For every other network the sender
-// domain must equal a registered domain exactly.
-export const EXPERT_NETWORK_SUBDOMAIN_SENDERS: readonly ExpertNetworkProvider[] = ['officehours'];
+// Networks that send from subdomains of a registered domain: Office Hours mail
+// comes from onboarding.officehours.com, and Coleman's from
+// outreach.colemanrg.com (its mail system rewrites the From onto that
+// subdomain and keeps the person's own address in Reply-To). For every other
+// network the sender domain must equal a registered domain exactly.
+export const EXPERT_NETWORK_SUBDOMAIN_SENDERS: readonly ExpertNetworkProvider[] = ['officehours', 'coleman'];
+
+/** One DNS label: letters, digits and inner hyphens, 1 to 63 characters. */
+const DOMAIN_LABEL = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 
 /**
  * The network a sender domain belongs to, or null. Exact match on a registered
  * domain for every network; a subdomain counts only for a network listed in
  * `EXPERT_NETWORK_SUBDOMAIN_SENDERS`. A domain that merely ends the same way
- * ("notofficehours.com", "officehours.com.evil.example") is no network. The
- * caller still has to authenticate the mail: this only names the sender.
+ * ("notofficehours.com", "colemanrg.com.evil.example", "evilcolemanrg.com") is
+ * no network, and neither is anything that is not a domain name: an empty or
+ * damaged label (".colemanrg.com", "a..colemanrg.com"), a trailing dot, an
+ * address. The caller still has to authenticate the mail: this only names the
+ * sender.
  */
 export function expertNetworkForSenderDomain(domain: string): ExpertNetworkProvider | null {
   const sender = domain.trim().toLowerCase();
-  if (!sender) return null;
+  if (!sender || !sender.split('.').every((label) => DOMAIN_LABEL.test(label))) return null;
   for (const provider of EXPERT_NETWORK_PROVIDERS) {
     const subdomains = EXPERT_NETWORK_SUBDOMAIN_SENDERS.includes(provider);
     if (EXPERT_NETWORK_DOMAINS[provider].some((registered) =>
